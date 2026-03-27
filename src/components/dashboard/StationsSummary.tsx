@@ -1,4 +1,5 @@
-import { Thermometer, Wind, Droplets, Gauge, Mountain } from 'lucide-react';
+import { Thermometer, Wind, Droplets, Gauge, Mountain, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { mockStations } from '@/data/mockStations';
 
