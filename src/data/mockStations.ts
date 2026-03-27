@@ -4,8 +4,10 @@ export const mockStations: WeatherStation[] = [
   {
     id: 'colverde',
     name: 'Colverde',
-    location: 'Partenza Impianti Colverde (TN)',
+    location: 'Partenza Cabinovia Colverde',
     altitude: 1500,
+    lat: 46.264223,
+    lng: 11.805125,
     source: 'html',
     lastUpdate: '27/03/2026 ore 17:24',
     urls: {
@@ -54,8 +56,10 @@ export const mockStations: WeatherStation[] = [
   {
     id: 'puntaces',
     name: 'Punta Ces',
-    location: 'Punta Ces (TN)',
+    location: 'Arrivo Seggiovia Punta Ces',
     altitude: 2230,
+    lat: 46.267872,
+    lng: 11.759757,
     source: 'html',
     lastUpdate: '27/03/2026 ore 17:34',
     urls: {
@@ -103,9 +107,11 @@ export const mockStations: WeatherStation[] = [
   },
   {
     id: 'colbricon',
-    name: 'Pian delle Cartucce - Colbricon Express',
-    location: 'Colbricon (TN)',
+    name: 'Arrivo Colbricon Express / Pian delle Cartucce',
+    location: 'Pian delle Cartucce',
     altitude: 1927,
+    lat: 46.273753,
+    lng: 11.767754,
     source: 'html',
     lastUpdate: '27/03/2026 ore 17:30',
     urls: {
@@ -154,8 +160,10 @@ export const mockStations: WeatherStation[] = [
   {
     id: 'passorolle',
     name: 'Passo Rolle',
-    location: 'Stazione Meteo Passo Rolle (TN)',
+    location: 'Passo Rolle / Ufficio Skipass',
     altitude: 1984,
+    lat: 46.295908,
+    lng: 11.782634,
     source: 'html',
     lastUpdate: '27/03/2026 ore 17:20',
     urls: {
@@ -203,9 +211,11 @@ export const mockStations: WeatherStation[] = [
   },
   {
     id: 'rosetta',
-    name: 'Rosetta',
-    location: 'Stazione Funivia Rosetta (TN)',
+    name: 'Funivia Rosetta',
+    location: 'Arrivo Funivia Rosetta',
     altitude: 2609,
+    lat: 46.264776,
+    lng: 11.833042,
     source: 'html',
     lastUpdate: '27/03/2026 ore 17:25',
     urls: {
@@ -254,8 +264,10 @@ export const mockStations: WeatherStation[] = [
   {
     id: 'pradellnasse',
     name: 'Prà delle Nasse',
-    location: 'Prà delle Nasse (TN)',
+    location: 'Prà delle Nasse / Palazzetto',
     altitude: 1535,
+    lat: 46.262108,
+    lng: 11.796740,
     source: 'xml',
     lastUpdate: '27/03/2026 ore 17:15',
     urls: {
@@ -305,9 +317,11 @@ export const mockStations: WeatherStation[] = [
 export const mockHydrometers: Hydrometer[] = [
   {
     id: 'sanmartino',
-    name: 'San Martino di Castrozza',
-    location: 'S. Martino di Castrozza',
+    name: 'Idrometro San Martino',
+    location: 'Ponte Richard Strauss',
     river: 'Torrente Cismon',
+    lat: 46.261830,
+    lng: 11.800926,
     url: 'https://www.floods.it/public/Charts.php?Sensori[]=28240',
     sensorId: '28240',
     lastUpdate: '27/03/2026 ore 17:00',
@@ -341,9 +355,11 @@ export const mockHydrometers: Hydrometer[] = [
   },
   {
     id: 'fieraprimiero',
-    name: 'Fiera di Primiero',
-    location: 'Fiera di Primiero',
+    name: 'Idrometro Fiera di Primiero',
+    location: 'Ponte Mirabello',
     river: 'Torrente Cismon',
+    lat: 46.177354,
+    lng: 11.830894,
     url: 'https://www.floods.it/public/Charts.php?Sensori[]=11768',
     sensorId: '11768',
     lastUpdate: '27/03/2026 ore 17:00',

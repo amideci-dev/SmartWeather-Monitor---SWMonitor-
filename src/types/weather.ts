@@ -5,6 +5,8 @@ export interface WeatherStation {
   name: string;
   location: string;
   altitude: number;
+  lat: number;
+  lng: number;
   source: StationSource;
   lastUpdate: string;
   urls: {
@@ -69,6 +71,8 @@ export interface Hydrometer {
   name: string;
   location: string;
   river: string;
+  lat: number;
+  lng: number;
   url: string;
   sensorId: string;
   lastUpdate: string;
