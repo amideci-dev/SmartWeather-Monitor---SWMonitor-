@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { mockStations, mockHydrometers } from '@/data/mockStations';
 
 const MAPY_API_KEY = 'SUMTdyzTGlTJNZT1HcqtFViewMoHuB7iNzm1kMCfUsk';
+const WINDY_API_KEY = 'ogEMc7vYebttuafxuLL4HtSyh5Ho2pvl';
 
-// Center of all stations (approx San Martino area)
+// Center on San Martino di Castrozza
 const MAP_CENTER: [number, number] = [46.265, 11.800];
 const MAP_ZOOM = 13;
 
