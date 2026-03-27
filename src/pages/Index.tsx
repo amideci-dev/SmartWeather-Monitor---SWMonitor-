@@ -18,7 +18,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Top bar */}
       <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
         <div className="flex h-14 items-center gap-3 px-4">
