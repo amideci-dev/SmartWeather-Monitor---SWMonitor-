@@ -107,9 +107,11 @@ export const mockStations: WeatherStation[] = [
   },
   {
     id: 'colbricon',
-    name: 'Pian delle Cartucce - Colbricon Express',
-    location: 'Colbricon (TN)',
+    name: 'Arrivo Colbricon Express / Pian delle Cartucce',
+    location: 'Pian delle Cartucce',
     altitude: 1927,
+    lat: 46.273753,
+    lng: 11.767754,
     source: 'html',
     lastUpdate: '27/03/2026 ore 17:30',
     urls: {
