@@ -1,9 +1,16 @@
+export type StationSource = 'html' | 'xml';
+
 export interface WeatherStation {
   id: string;
   name: string;
   location: string;
   altitude: number;
+  source: StationSource;
   lastUpdate: string;
+  urls: {
+    weather: string;
+    wind?: string; // XML stations have wind in same URL
+  };
   weather: WeatherData;
   wind: WindData;
 }
@@ -17,11 +24,11 @@ export interface WeatherData {
   humidity: number;
   humidityTrend: 'rising' | 'falling' | 'stable';
   humidityTrendValue: number;
-  dewPoint: number;
-  perceivedTemp: number;
-  wetBulb: number;
+  dewPoint: number | null;
+  perceivedTemp: number | null;
+  wetBulb: number | null;
   rainIntensity: number;
-  pressure: number;
+  pressure: number | null;
   pressureTrend: 'rising' | 'falling' | 'stable';
   pressureTrendValue: number;
   dailyExtremes: {
@@ -42,8 +49,8 @@ export interface WindData {
   speed: number;
   beaufort: number;
   beaufortDescription: string;
-  windChill: number;
-  feelsLike: number;
+  windChill: number | null;
+  feelsLike: number | null;
   averages: {
     min10: number;
     min15: number;
@@ -55,4 +62,25 @@ export interface WindData {
     today: number;
     todayTime: string;
   };
+}
+
+export interface Hydrometer {
+  id: string;
+  name: string;
+  location: string;
+  river: string;
+  url: string;
+  sensorId: string;
+  lastUpdate: string;
+  currentLevel: number;
+  currentFlow: number | null; // m³/s — not all have flow
+  levelUnit: string;
+  flowUnit: string;
+  history: HydrometerReading[];
+}
+
+export interface HydrometerReading {
+  time: string;
+  level: number;
+  flow: number | null;
 }

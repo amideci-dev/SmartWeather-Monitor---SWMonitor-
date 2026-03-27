@@ -23,7 +23,7 @@ export function WeatherCard({ data }: WeatherCardProps) {
       </CardHeader>
       <CardContent className="space-y-5">
         {/* Main readings */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className={`grid gap-4 ${data.pressure !== null ? 'grid-cols-3' : 'grid-cols-2'}`}>
           {/* Temperature */}
           <div className="rounded-lg bg-muted/50 p-3 text-center">
             <p className="text-xs font-medium text-muted-foreground mb-1">Temperatura</p>
@@ -48,33 +48,41 @@ export function WeatherCard({ data }: WeatherCardProps) {
           </div>
 
           {/* Pressure */}
-          <div className="rounded-lg bg-muted/50 p-3 text-center">
-            <p className="text-xs font-medium text-muted-foreground mb-1">Pressione</p>
-            <div className="flex items-center justify-center gap-1">
-              <Gauge className="h-4 w-4 text-primary" />
-              <p className="text-lg font-bold font-mono">{data.pressure}</p>
+          {data.pressure !== null && (
+            <div className="rounded-lg bg-muted/50 p-3 text-center">
+              <p className="text-xs font-medium text-muted-foreground mb-1">Pressione</p>
+              <div className="flex items-center justify-center gap-1">
+                <Gauge className="h-4 w-4 text-primary" />
+                <p className="text-lg font-bold font-mono">{data.pressure.toFixed(1)}</p>
+              </div>
+              <div className="flex items-center justify-center gap-1 mt-1">
+                <TrendIcon trend={data.pressureTrend} />
+                <span className="text-xs text-muted-foreground">{data.pressureTrendValue} hPa/h</span>
+              </div>
             </div>
-            <div className="flex items-center justify-center gap-1 mt-1">
-              <TrendIcon trend={data.pressureTrend} />
-              <span className="text-xs text-muted-foreground">{data.pressureTrendValue} hPa/h</span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Secondary readings */}
         <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Punto di rugiada</span>
-            <span className="font-mono font-medium">{data.dewPoint}°C</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Temp. percepita</span>
-            <span className="font-mono font-medium">{data.perceivedTemp}°C</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Bulbo umido</span>
-            <span className="font-mono font-medium">{data.wetBulb}°C</span>
-          </div>
+          {data.dewPoint !== null && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Punto di rugiada</span>
+              <span className="font-mono font-medium">{data.dewPoint}°C</span>
+            </div>
+          )}
+          {data.perceivedTemp !== null && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Temp. percepita</span>
+              <span className="font-mono font-medium">{data.perceivedTemp}°C</span>
+            </div>
+          )}
+          {data.wetBulb !== null && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Bulbo umido</span>
+              <span className="font-mono font-medium">{data.wetBulb}°C</span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-muted-foreground">Intensità pioggia</span>
             <span className="font-mono font-medium">{data.rainIntensity} mm/h</span>

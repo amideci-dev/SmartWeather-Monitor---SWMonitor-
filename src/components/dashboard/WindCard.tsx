@@ -44,16 +44,22 @@ export function WindCard({ data }: WindCardProps) {
         </div>
 
         {/* Wind chill */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-lg bg-muted/50 p-3 text-center">
-            <p className="text-xs text-muted-foreground mb-1">Wind Chill</p>
-            <p className="text-xl font-bold font-mono">{data.windChill}°C</p>
+        {(data.windChill !== null || data.feelsLike !== null) && (
+          <div className="grid grid-cols-2 gap-4">
+            {data.windChill !== null && (
+              <div className="rounded-lg bg-muted/50 p-3 text-center">
+                <p className="text-xs text-muted-foreground mb-1">Wind Chill</p>
+                <p className="text-xl font-bold font-mono">{data.windChill}°C</p>
+              </div>
+            )}
+            {data.feelsLike !== null && (
+              <div className="rounded-lg bg-muted/50 p-3 text-center">
+                <p className="text-xs text-muted-foreground mb-1">Percepita</p>
+                <p className="text-xl font-bold font-mono">{data.feelsLike}°C</p>
+              </div>
+            )}
           </div>
-          <div className="rounded-lg bg-muted/50 p-3 text-center">
-            <p className="text-xs text-muted-foreground mb-1">Percepita</p>
-            <p className="text-xl font-bold font-mono">{data.feelsLike}°C</p>
-          </div>
-        </div>
+        )}
 
         {/* Averages */}
         <div className="border-t pt-4">
