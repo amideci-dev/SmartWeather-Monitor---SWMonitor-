@@ -8,17 +8,19 @@ import { StationHeader } from '@/components/dashboard/StationHeader';
 import { HydrometerCard } from '@/components/dashboard/HydrometerCard';
 import { MapSidebar } from '@/components/dashboard/MapSidebar';
 import { AlertBadge } from '@/components/dashboard/AlertBadge';
-import { WindAlertsBell } from '@/components/dashboard/WindAlertsBell';
-import { WindAlertBanner } from '@/components/dashboard/WindAlertBanner';
+import { AlertsBell } from '@/components/dashboard/WindAlertsBell';
+import { AlertBanner } from '@/components/dashboard/WindAlertBanner';
 import { StationsSummary } from '@/components/dashboard/StationsSummary';
 import { mockStations, mockHydrometers } from '@/data/mockStations';
 import { mockAlert } from '@/data/mockAlert';
-import { generateWindAlerts } from '@/lib/windAlerts';
+import { generateWindAlerts, generateHydroAlerts, StationAlert } from '@/lib/windAlerts';
 
 const Index = () => {
   const [activeStation, setActiveStation] = useState<string | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
   const windAlerts = useMemo(() => generateWindAlerts(mockStations), []);
+  const hydroAlerts = useMemo(() => generateHydroAlerts(mockHydrometers), []);
+  const allAlerts: StationAlert[] = useMemo(() => [...windAlerts, ...hydroAlerts], [windAlerts, hydroAlerts]);
 
   const station = activeStation
     ? mockStations.find((s) => s.id === activeStation) ?? null
@@ -31,7 +33,7 @@ const Index = () => {
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Wind alert banner */}
-      <WindAlertBanner alerts={windAlerts} />
+      <AlertBanner alerts={allAlerts} />
 
       {/* Top bar */}
       <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
@@ -43,7 +45,7 @@ const Index = () => {
 
           <div className="ml-auto flex items-center gap-3">
             <AlertBadge alert={mockAlert} />
-            <WindAlertsBell alerts={windAlerts} onSelectStation={handleSelectStation} />
+            <AlertsBell alerts={allAlerts} onSelectStation={handleSelectStation} />
             <div className="flex items-center gap-1.5 text-xs text-success">
               <Radio className="h-3.5 w-3.5 animate-pulse" />
               <span className="font-medium">Live</span>
