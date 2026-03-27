@@ -211,9 +211,11 @@ export const mockStations: WeatherStation[] = [
   },
   {
     id: 'rosetta',
-    name: 'Rosetta',
-    location: 'Stazione Funivia Rosetta (TN)',
+    name: 'Funivia Rosetta',
+    location: 'Arrivo Funivia Rosetta',
     altitude: 2609,
+    lat: 46.264776,
+    lng: 11.833042,
     source: 'html',
     lastUpdate: '27/03/2026 ore 17:25',
     urls: {
