@@ -317,9 +317,11 @@ export const mockStations: WeatherStation[] = [
 export const mockHydrometers: Hydrometer[] = [
   {
     id: 'sanmartino',
-    name: 'San Martino di Castrozza',
-    location: 'S. Martino di Castrozza',
+    name: 'Idrometro San Martino',
+    location: 'Ponte Richard Strauss',
     river: 'Torrente Cismon',
+    lat: 46.261830,
+    lng: 11.800926,
     url: 'https://www.floods.it/public/Charts.php?Sensori[]=28240',
     sensorId: '28240',
     lastUpdate: '27/03/2026 ore 17:00',
