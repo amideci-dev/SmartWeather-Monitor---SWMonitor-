@@ -142,7 +142,7 @@ export function MapSidebar({ expanded, onToggleExpand, onSelectStation }: MapSid
   }, [expanded]);
 
   return (
-    <div className="flex h-full flex-col border-l bg-card">
+    <div className="flex h-full w-full flex-col border-l bg-card">
       {/* Header */}
       <div className="flex items-center justify-between border-b px-3 py-2">
         <div className="flex items-center gap-2">
