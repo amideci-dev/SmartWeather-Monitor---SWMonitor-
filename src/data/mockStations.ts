@@ -56,8 +56,10 @@ export const mockStations: WeatherStation[] = [
   {
     id: 'puntaces',
     name: 'Punta Ces',
-    location: 'Punta Ces (TN)',
+    location: 'Arrivo Seggiovia Punta Ces',
     altitude: 2230,
+    lat: 46.267872,
+    lng: 11.759757,
     source: 'html',
     lastUpdate: '27/03/2026 ore 17:34',
     urls: {
