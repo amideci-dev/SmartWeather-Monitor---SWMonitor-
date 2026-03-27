@@ -104,8 +104,8 @@ const Index = () => {
 
         {/* Map sidebar */}
         <aside
-          className="hidden md:flex transition-all duration-300 min-h-0"
-          style={{ flexBasis: mapExpanded ? '60%' : '25%', minWidth: mapExpanded ? '400px' : '280px' }}
+          className="hidden md:block transition-all duration-300"
+          style={{ width: mapExpanded ? '60%' : '25%', minWidth: mapExpanded ? '400px' : '280px', flexShrink: 0 }}
         >
           <MapSidebar
             expanded={mapExpanded}
