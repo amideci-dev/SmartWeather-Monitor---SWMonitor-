@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Flame, Radio, Waves, Mountain, LayoutGrid } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { WeatherCard } from '@/components/dashboard/WeatherCard';
 import { WindCard } from '@/components/dashboard/WindCard';
 import { StationHeader } from '@/components/dashboard/StationHeader';
@@ -60,12 +61,14 @@ const Index = () => {
                   {mockStations.length}
                 </span>
                 {activeStation && (
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setActiveStation(null)}
-                    className="ml-auto text-xs text-primary hover:underline"
+                    className="ml-auto"
                   >
                     ← Torna al riepilogo
-                  </button>
+                  </Button>
                 )}
               </div>
 

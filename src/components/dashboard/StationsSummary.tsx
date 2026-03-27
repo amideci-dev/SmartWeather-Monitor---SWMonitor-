@@ -1,4 +1,5 @@
-import { Thermometer, Wind, Droplets, Gauge, Mountain } from 'lucide-react';
+import { Thermometer, Wind, Droplets, Gauge, Mountain, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { mockStations } from '@/data/mockStations';
 
@@ -81,6 +82,20 @@ export function StationsSummary({ onSelectStation }: StationsSummaryProps) {
                   Pioggia <span className="font-mono font-medium">{s.weather.dailyExtremes.dailyRain} mm</span>
                 </span>
               </div>
+
+              {/* Detail button */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectStation(s.id);
+                }}
+              >
+                Vedi dettaglio dati
+                <ArrowRight className="ml-1 h-3 w-3" />
+              </Button>
             </CardContent>
           </Card>
         );
