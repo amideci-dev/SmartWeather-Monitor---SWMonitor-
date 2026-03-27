@@ -103,7 +103,7 @@ export const mockStations: WeatherStation[] = [
   },
   {
     id: 'colbricon',
-    name: 'Colbricon',
+    name: 'Pian delle Cartucce - Colbricon Express',
     location: 'Colbricon (TN)',
     altitude: 1927,
     source: 'html',
