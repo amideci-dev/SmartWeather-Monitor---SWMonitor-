@@ -33,7 +33,7 @@ const Index = () => {
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Wind alert banner */}
-      <WindAlertBanner alerts={windAlerts} />
+      <AlertBanner alerts={allAlerts} />
 
       {/* Top bar */}
       <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
