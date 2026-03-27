@@ -5,6 +5,8 @@ export interface WeatherStation {
   name: string;
   location: string;
   altitude: number;
+  lat: number;
+  lng: number;
   source: StationSource;
   lastUpdate: string;
   urls: {
