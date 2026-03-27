@@ -143,18 +143,28 @@ export function MapSidebar({ expanded, onToggleExpand, onSelectStation }: MapSid
     }, 350);
   }, [expanded]);
 
+  const [activeTab, setActiveTab] = useState('mappa');
+
   return (
     <div className="flex h-full w-full flex-col border-l bg-card">
-      {/* Header */}
+      {/* Header with tabs */}
       <div className="flex items-center justify-between border-b px-3 py-2">
-        <div className="flex items-center gap-2">
-          <Map className="h-4 w-4 text-primary" />
-          <span className="text-sm font-bold">Mappa</span>
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
+          <TabsList className="h-8 bg-muted/50">
+            <TabsTrigger value="mappa" className="text-xs gap-1 px-3 py-1">
+              <Map className="h-3.5 w-3.5" />
+              Mappa
+            </TabsTrigger>
+            <TabsTrigger value="radar" className="text-xs gap-1 px-3 py-1">
+              <Radar className="h-3.5 w-3.5" />
+              Radar
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7"
+          className="h-7 w-7 ml-2"
           onClick={onToggleExpand}
         >
           {expanded ? (
@@ -166,7 +176,23 @@ export function MapSidebar({ expanded, onToggleExpand, onSelectStation }: MapSid
       </div>
 
       {/* Map container */}
-      <div ref={mapContainer} className="flex-1 min-h-0" />
+      <div
+        ref={mapContainer}
+        className="flex-1 min-h-0"
+        style={{ display: activeTab === 'mappa' ? 'block' : 'none' }}
+      />
+
+      {/* Windy radar */}
+      {activeTab === 'radar' && (
+        <div className="flex-1 min-h-0">
+          <iframe
+            className="h-full w-full border-0"
+            src={`https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=11&overlay=radar&product=radar&level=surface&lat=${MAP_CENTER[0]}&lon=${MAP_CENTER[1]}&key=${WINDY_API_KEY}`}
+            title="Windy Radar"
+            allow="fullscreen"
+          />
+        </div>
+      )}
     </div>
   );
 }
