@@ -30,6 +30,9 @@ const Index = () => {
 
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
+      {/* Wind alert banner */}
+      <WindAlertBanner alerts={windAlerts} />
+
       {/* Top bar */}
       <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
         <div className="flex h-14 items-center gap-3 px-4">
@@ -40,6 +43,7 @@ const Index = () => {
 
           <div className="ml-auto flex items-center gap-3">
             <AlertBadge alert={mockAlert} />
+            <WindAlertsBell alerts={windAlerts} onSelectStation={handleSelectStation} />
             <div className="flex items-center gap-1.5 text-xs text-success">
               <Radio className="h-3.5 w-3.5 animate-pulse" />
               <span className="font-medium">Live</span>
