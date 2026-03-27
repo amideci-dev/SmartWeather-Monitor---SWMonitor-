@@ -160,8 +160,10 @@ export const mockStations: WeatherStation[] = [
   {
     id: 'passorolle',
     name: 'Passo Rolle',
-    location: 'Stazione Meteo Passo Rolle (TN)',
+    location: 'Passo Rolle / Ufficio Skipass',
     altitude: 1984,
+    lat: 46.295908,
+    lng: 11.782634,
     source: 'html',
     lastUpdate: '27/03/2026 ore 17:20',
     urls: {
