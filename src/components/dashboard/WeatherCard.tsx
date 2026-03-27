@@ -48,17 +48,19 @@ export function WeatherCard({ data }: WeatherCardProps) {
           </div>
 
           {/* Pressure */}
-          <div className="rounded-lg bg-muted/50 p-3 text-center">
-            <p className="text-xs font-medium text-muted-foreground mb-1">Pressione</p>
-            <div className="flex items-center justify-center gap-1">
-              <Gauge className="h-4 w-4 text-primary" />
-              <p className="text-lg font-bold font-mono">{data.pressure}</p>
+          {data.pressure !== null && (
+            <div className="rounded-lg bg-muted/50 p-3 text-center">
+              <p className="text-xs font-medium text-muted-foreground mb-1">Pressione</p>
+              <div className="flex items-center justify-center gap-1">
+                <Gauge className="h-4 w-4 text-primary" />
+                <p className="text-lg font-bold font-mono">{data.pressure.toFixed(1)}</p>
+              </div>
+              <div className="flex items-center justify-center gap-1 mt-1">
+                <TrendIcon trend={data.pressureTrend} />
+                <span className="text-xs text-muted-foreground">{data.pressureTrendValue} hPa/h</span>
+              </div>
             </div>
-            <div className="flex items-center justify-center gap-1 mt-1">
-              <TrendIcon trend={data.pressureTrend} />
-              <span className="text-xs text-muted-foreground">{data.pressureTrendValue} hPa/h</span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Secondary readings */}
