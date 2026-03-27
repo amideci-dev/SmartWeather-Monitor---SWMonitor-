@@ -113,4 +113,32 @@
   .font-mono {
     font-family: 'JetBrains Mono', ui-monospace, monospace;
   }
+
+  /* Map marker pins */
+  .station-pin {
+    @apply flex h-9 w-9 items-center justify-center rounded-full bg-card border-2 border-primary shadow-lg;
+  }
+
+  .hydro-pin {
+    @apply flex h-9 w-9 items-center justify-center rounded-full bg-card border-2 border-info shadow-lg;
+  }
+
+  /* Leaflet popup overrides */
+  .station-popup .leaflet-popup-content-wrapper {
+    @apply rounded-lg border bg-card text-foreground shadow-lg;
+    padding: 0;
+  }
+
+  .station-popup .leaflet-popup-content {
+    margin: 0;
+  }
+
+  .station-popup .leaflet-popup-tip {
+    @apply bg-card;
+  }
+
+  .custom-marker {
+    background: transparent !important;
+    border: none !important;
+  }
 }
