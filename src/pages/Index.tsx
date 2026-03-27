@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Flame, Radio, Waves, Mountain, LayoutGrid } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -8,9 +8,12 @@ import { StationHeader } from '@/components/dashboard/StationHeader';
 import { HydrometerCard } from '@/components/dashboard/HydrometerCard';
 import { MapSidebar } from '@/components/dashboard/MapSidebar';
 import { AlertBadge } from '@/components/dashboard/AlertBadge';
+import { WindAlertsBell } from '@/components/dashboard/WindAlertsBell';
+import { WindAlertBanner } from '@/components/dashboard/WindAlertBanner';
 import { StationsSummary } from '@/components/dashboard/StationsSummary';
 import { mockStations, mockHydrometers } from '@/data/mockStations';
 import { mockAlert } from '@/data/mockAlert';
+import { generateWindAlerts } from '@/lib/windAlerts';
 
 const Index = () => {
   const [activeStation, setActiveStation] = useState<string | null>(null);
