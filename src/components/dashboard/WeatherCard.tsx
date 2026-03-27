@@ -23,7 +23,7 @@ export function WeatherCard({ data }: WeatherCardProps) {
       </CardHeader>
       <CardContent className="space-y-5">
         {/* Main readings */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className={`grid gap-4 ${data.pressure !== null ? 'grid-cols-3' : 'grid-cols-2'}`}>
           {/* Temperature */}
           <div className="rounded-lg bg-muted/50 p-3 text-center">
             <p className="text-xs font-medium text-muted-foreground mb-1">Temperatura</p>
