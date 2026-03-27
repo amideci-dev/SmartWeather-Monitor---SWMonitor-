@@ -4,6 +4,8 @@ export interface Alert {
   level: AlertLevel;
   title: string;
   text: string;
+  dateFrom: string;
+  dateTo: string;
   pdfUrl: string | null;
   sourceUrl: string;
 }
