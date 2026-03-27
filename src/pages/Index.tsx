@@ -8,12 +8,12 @@ import { StationHeader } from '@/components/dashboard/StationHeader';
 import { HydrometerCard } from '@/components/dashboard/HydrometerCard';
 import { MapSidebar } from '@/components/dashboard/MapSidebar';
 import { AlertBadge } from '@/components/dashboard/AlertBadge';
-import { WindAlertsBell } from '@/components/dashboard/WindAlertsBell';
-import { WindAlertBanner } from '@/components/dashboard/WindAlertBanner';
+import { AlertsBell } from '@/components/dashboard/WindAlertsBell';
+import { AlertBanner } from '@/components/dashboard/WindAlertBanner';
 import { StationsSummary } from '@/components/dashboard/StationsSummary';
 import { mockStations, mockHydrometers } from '@/data/mockStations';
 import { mockAlert } from '@/data/mockAlert';
-import { generateWindAlerts } from '@/lib/windAlerts';
+import { generateWindAlerts, generateHydroAlerts, StationAlert } from '@/lib/windAlerts';
 
 const Index = () => {
   const [activeStation, setActiveStation] = useState<string | null>(null);
