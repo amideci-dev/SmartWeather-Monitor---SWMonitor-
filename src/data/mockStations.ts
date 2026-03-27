@@ -355,9 +355,11 @@ export const mockHydrometers: Hydrometer[] = [
   },
   {
     id: 'fieraprimiero',
-    name: 'Fiera di Primiero',
-    location: 'Fiera di Primiero',
+    name: 'Idrometro Fiera di Primiero',
+    location: 'Ponte Mirabello',
     river: 'Torrente Cismon',
+    lat: 46.177354,
+    lng: 11.830894,
     url: 'https://www.floods.it/public/Charts.php?Sensori[]=11768',
     sensorId: '11768',
     lastUpdate: '27/03/2026 ore 17:00',
