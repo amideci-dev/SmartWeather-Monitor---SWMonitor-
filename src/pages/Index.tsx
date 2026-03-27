@@ -18,6 +18,7 @@ import { generateWindAlerts } from '@/lib/windAlerts';
 const Index = () => {
   const [activeStation, setActiveStation] = useState<string | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
+  const windAlerts = useMemo(() => generateWindAlerts(mockStations), []);
 
   const station = activeStation
     ? mockStations.find((s) => s.id === activeStation) ?? null
