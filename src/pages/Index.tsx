@@ -60,12 +60,14 @@ const Index = () => {
                   {mockStations.length}
                 </span>
                 {activeStation && (
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setActiveStation(null)}
-                    className="ml-auto text-xs text-primary hover:underline"
+                    className="ml-auto"
                   >
                     ← Torna al riepilogo
-                  </button>
+                  </Button>
                 )}
               </div>
 
