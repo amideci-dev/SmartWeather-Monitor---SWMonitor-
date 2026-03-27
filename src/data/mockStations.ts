@@ -4,8 +4,10 @@ export const mockStations: WeatherStation[] = [
   {
     id: 'colverde',
     name: 'Colverde',
-    location: 'Partenza Impianti Colverde (TN)',
+    location: 'Partenza Cabinovia Colverde',
     altitude: 1500,
+    lat: 46.264223,
+    lng: 11.805125,
     source: 'html',
     lastUpdate: '27/03/2026 ore 17:24',
     urls: {
