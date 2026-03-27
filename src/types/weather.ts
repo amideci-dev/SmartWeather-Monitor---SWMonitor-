@@ -71,6 +71,8 @@ export interface Hydrometer {
   name: string;
   location: string;
   river: string;
+  lat: number;
+  lng: number;
   url: string;
   sensorId: string;
   lastUpdate: string;
