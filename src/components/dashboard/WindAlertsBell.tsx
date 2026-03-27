@@ -59,7 +59,7 @@ export function AlertsBell({ alerts, onSelectStation }: AlertsBellProps) {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
+      <PopoverContent className="w-80 p-0 z-[100]" align="end">
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-accent" />
