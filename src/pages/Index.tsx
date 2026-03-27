@@ -45,7 +45,7 @@ const Index = () => {
 
           <div className="ml-auto flex items-center gap-3">
             <AlertBadge alert={mockAlert} />
-            <WindAlertsBell alerts={windAlerts} onSelectStation={handleSelectStation} />
+            <AlertsBell alerts={allAlerts} onSelectStation={handleSelectStation} />
             <div className="flex items-center gap-1.5 text-xs text-success">
               <Radio className="h-3.5 w-3.5 animate-pulse" />
               <span className="font-medium">Live</span>
