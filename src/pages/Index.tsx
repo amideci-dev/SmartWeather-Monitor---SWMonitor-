@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Flame, Radio, Waves, Mountain, LayoutGrid } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -8,13 +8,17 @@ import { StationHeader } from '@/components/dashboard/StationHeader';
 import { HydrometerCard } from '@/components/dashboard/HydrometerCard';
 import { MapSidebar } from '@/components/dashboard/MapSidebar';
 import { AlertBadge } from '@/components/dashboard/AlertBadge';
+import { WindAlertsBell } from '@/components/dashboard/WindAlertsBell';
+import { WindAlertBanner } from '@/components/dashboard/WindAlertBanner';
 import { StationsSummary } from '@/components/dashboard/StationsSummary';
 import { mockStations, mockHydrometers } from '@/data/mockStations';
 import { mockAlert } from '@/data/mockAlert';
+import { generateWindAlerts } from '@/lib/windAlerts';
 
 const Index = () => {
   const [activeStation, setActiveStation] = useState<string | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
+  const windAlerts = useMemo(() => generateWindAlerts(mockStations), []);
 
   const station = activeStation
     ? mockStations.find((s) => s.id === activeStation) ?? null
@@ -26,6 +30,9 @@ const Index = () => {
 
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
+      {/* Wind alert banner */}
+      <WindAlertBanner alerts={windAlerts} />
+
       {/* Top bar */}
       <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
         <div className="flex h-14 items-center gap-3 px-4">
@@ -36,6 +43,7 @@ const Index = () => {
 
           <div className="ml-auto flex items-center gap-3">
             <AlertBadge alert={mockAlert} />
+            <WindAlertsBell alerts={windAlerts} onSelectStation={handleSelectStation} />
             <div className="flex items-center gap-1.5 text-xs text-success">
               <Radio className="h-3.5 w-3.5 animate-pulse" />
               <span className="font-medium">Live</span>
