@@ -19,6 +19,8 @@ const Index = () => {
   const [activeStation, setActiveStation] = useState<string | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
   const windAlerts = useMemo(() => generateWindAlerts(mockStations), []);
+  const hydroAlerts = useMemo(() => generateHydroAlerts(mockHydrometers), []);
+  const allAlerts: StationAlert[] = useMemo(() => [...windAlerts, ...hydroAlerts], [windAlerts, hydroAlerts]);
 
   const station = activeStation
     ? mockStations.find((s) => s.id === activeStation) ?? null
