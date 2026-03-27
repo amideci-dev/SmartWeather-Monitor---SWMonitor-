@@ -51,6 +51,7 @@ export function AlertBadge({ alert }: AlertBadgeProps) {
         >
           <AlertTriangle className="h-3.5 w-3.5" />
           Allerta {alert.level.charAt(0).toUpperCase() + alert.level.slice(1)}
+          <span className="font-normal opacity-90">{alert.dateFrom} → {alert.dateTo}</span>
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
