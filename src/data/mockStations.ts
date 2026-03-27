@@ -264,8 +264,10 @@ export const mockStations: WeatherStation[] = [
   {
     id: 'pradellnasse',
     name: 'Prà delle Nasse',
-    location: 'Prà delle Nasse (TN)',
+    location: 'Prà delle Nasse / Palazzetto',
     altitude: 1535,
+    lat: 46.262108,
+    lng: 11.796740,
     source: 'xml',
     lastUpdate: '27/03/2026 ore 17:15',
     urls: {
