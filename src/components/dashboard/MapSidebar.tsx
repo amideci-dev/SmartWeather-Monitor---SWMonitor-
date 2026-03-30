@@ -146,7 +146,7 @@ export function MapSidebar({ expanded, onToggleExpand, onSelectStation }: MapSid
   const [activeTab, setActiveTab] = useState('mappa');
 
   return (
-    <div className="flex h-full w-full flex-col border-l bg-card">
+    <div className="map-sidebar relative isolate z-0 flex h-full w-full flex-col border-l bg-card">
       {/* Header with tabs */}
       <div className="flex items-center justify-between border-b px-3 py-2">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
@@ -178,7 +178,7 @@ export function MapSidebar({ expanded, onToggleExpand, onSelectStation }: MapSid
       {/* Map container */}
       <div
         ref={mapContainer}
-        className="flex-1 min-h-0"
+        className="relative z-0 flex-1 min-h-0"
         style={{ display: activeTab === 'mappa' ? 'block' : 'none' }}
       />
 
