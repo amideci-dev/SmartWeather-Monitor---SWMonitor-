@@ -1,11 +1,12 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Flame, Radio, Waves, Mountain, LayoutGrid } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { WindData } from '@/types/weather';
 
-const hasWindData = (wind: WindData): boolean =>
-  wind.speed > 0 || wind.gusts.today > 0 || wind.gusts.lastHour > 0 ||
-  wind.averages.min10 > 0 || wind.averages.min60 > 0;
+
+// Stations without a wind sensor have all values at 0 AND no wind URL
+// Calm wind (all zeros) should still show the card if the station has the sensor
+const hasWindSensor = (station: { urls: { wind?: string }; source: string }): boolean =>
+  !!station.urls.wind || station.source === 'wunderground';
 import { Button } from '@/components/ui/button';
 import { WeatherCard } from '@/components/dashboard/WeatherCard';
 import { RainCard } from '@/components/dashboard/RainCard';
@@ -132,9 +133,9 @@ const Index = () => {
                 </div>
 
                 {/* Cards grid */}
-                <div className={`mt-4 grid gap-6 ${hasWindData(station.wind) ? 'lg:grid-cols-2' : 'lg:grid-cols-1 max-w-2xl'}`}>
+                <div className={`mt-4 grid gap-6 ${hasWindSensor(station) ? 'lg:grid-cols-2' : 'lg:grid-cols-1 max-w-2xl'}`}>
                   <WeatherCard data={station.weather} />
-                  {hasWindData(station.wind) && <WindCard data={station.wind} />}
+                  {hasWindSensor(station) && <WindCard data={station.wind} />}
                   <RainCard
                     data={station.weather}
                     rainUrl={station.urls.rain}
