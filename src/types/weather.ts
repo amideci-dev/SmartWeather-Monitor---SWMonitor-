@@ -48,6 +48,8 @@ export interface WeatherData {
   snowDepth?: number | null;       // cm
   uvIndex?: number | null;
   airQualityIndex?: number | null;
+  // Extra fields (MeteoTrentino XML)
+  solarRadiation?: number | null;  // W/m²
 }
 
 export interface WindData {
