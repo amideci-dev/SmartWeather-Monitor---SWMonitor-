@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Flame, Radio, Waves, Mountain, LayoutGrid, Snowflake } from 'lucide-react';
+import { Flame, Radio, Waves, Mountain, LayoutGrid, Snowflake, Camera } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
@@ -18,9 +18,12 @@ import { AlertBadge } from '@/components/dashboard/AlertBadge';
 import { AlertsBell } from '@/components/dashboard/WindAlertsBell';
 import { AlertBanner } from '@/components/dashboard/WindAlertBanner';
 import { StationsSummary } from '@/components/dashboard/StationsSummary';
+import { WebcamsSection } from '@/components/dashboard/WebcamsSection';
+import { WebcamCard } from '@/components/dashboard/WebcamCard';
 import { mockStations, mockHydrometers } from '@/data/mockStations';
 import { mockSnowStations } from '@/data/mockSnow';
 import { mockAlert } from '@/data/mockAlert';
+import { stationWebcams } from '@/data/mockWebcams';
 import { generateWindAlerts, generateHydroAlerts, StationAlert } from '@/lib/windAlerts';
 
 const Index = () => {
@@ -95,7 +98,11 @@ const Index = () => {
               )}
             </section>
 
-            {/* ─── Station Detail ─── */}
+            {/* ─── Webcams (collapsible, only on summary) ─── */}
+            {!activeStation && (
+              <WebcamsSection onSelectStation={handleSelectStation} />
+            )}
+
             {station && (
               <section>
                 <div className="flex items-center gap-2 mb-4">
@@ -143,6 +150,23 @@ const Index = () => {
                     hasWinterDisclaimer={station.hasWinterRainDisclaimer}
                   />
                 </div>
+
+                {/* Station webcams */}
+                {stationWebcams.filter((c) => c.stationId === station.id).length > 0 && (
+                  <div className="mt-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Camera className="h-4 w-4 text-muted-foreground" />
+                      <h3 className="text-sm font-semibold">Webcam</h3>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {stationWebcams
+                        .filter((c) => c.stationId === station.id)
+                        .map((cam) => (
+                          <WebcamCard key={cam.id} webcam={cam} />
+                        ))}
+                    </div>
+                  </div>
+                )}
               </section>
             )}
 
