@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Flame, Radio, Waves, Mountain, LayoutGrid } from 'lucide-react';
+import { Flame, Radio, Waves, Mountain, LayoutGrid, Snowflake } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
