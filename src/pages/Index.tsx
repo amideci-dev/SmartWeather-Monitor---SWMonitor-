@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Flame, Radio, Waves, Mountain, LayoutGrid } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { WindData } from '@/types/weather';
+
 
 // Stations without a wind sensor have all values at 0 AND no wind URL
 // Calm wind (all zeros) should still show the card if the station has the sensor
