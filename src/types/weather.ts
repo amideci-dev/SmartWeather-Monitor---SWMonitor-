@@ -15,6 +15,7 @@ export interface WeatherStation {
     rain?: string; // Pluviometer page URL
   };
   hasWinterRainDisclaimer?: boolean; // Pluviometer unreliable in winter
+  hasWindSensor?: boolean; // XML stations: true if vento_al_suolo exists
   weather: WeatherData;
   wind: WindData;
 }
