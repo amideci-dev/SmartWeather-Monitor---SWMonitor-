@@ -128,7 +128,7 @@ const Index = () => {
               </button>
             ))}
           </nav>
-        )
+        )}
       </header>
 
       {/* Main layout: data (left) + map (right) */}
