@@ -38,6 +38,9 @@ export function StationsSummary({ onSelectStation }: StationsSummaryProps) {
                     {s.source === 'xml' && (
                       <span className="ml-1 rounded bg-warning/20 px-1 text-[10px] text-warning">XML</span>
                     )}
+                    {s.source === 'wunderground' && (
+                      <span className="ml-1 rounded bg-info/20 px-1 text-[10px] text-info">WU</span>
+                    )}
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
