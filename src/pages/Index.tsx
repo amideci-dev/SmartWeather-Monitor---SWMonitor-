@@ -157,7 +157,7 @@ const Index = () => {
                 <LayoutGrid className="h-5 w-5 text-primary" />
                 <h2 className="text-lg font-bold">Riepilogo Stazioni</h2>
                 <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                  {mockStations.length}
+                  {stations.length}
                 </span>
                 {activeStation && (
                   <Button
