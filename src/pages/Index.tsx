@@ -150,6 +150,23 @@ const Index = () => {
                     hasWinterDisclaimer={station.hasWinterRainDisclaimer}
                   />
                 </div>
+
+                {/* Station webcams */}
+                {stationWebcams.filter((c) => c.stationId === station.id).length > 0 && (
+                  <div className="mt-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Camera className="h-4 w-4 text-muted-foreground" />
+                      <h3 className="text-sm font-semibold">Webcam</h3>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {stationWebcams
+                        .filter((c) => c.stationId === station.id)
+                        .map((cam) => (
+                          <WebcamCard key={cam.id} webcam={cam} />
+                        ))}
+                    </div>
+                  </div>
+                )}
               </section>
             )}
 
