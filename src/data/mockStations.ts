@@ -15,7 +15,7 @@ export const mockStations: WeatherStation[] = [
       wind: 'https://www.primierometeo.it/colverde/9meteo_vento_.php',
       rain: 'https://www.primierometeo.it/colverde/wx4.html',
     },
-    hasWinterRainDisclaimer: true,
+    // hasWinterRainDisclaimer removed — Colverde has reliable pluviometer
     weather: {
       condition: 'Poco nuvoloso',
       conditionIcon: '⛅',
@@ -123,7 +123,7 @@ export const mockStations: WeatherStation[] = [
       wind: 'https://www.primierometeo.it/colbricon/9meteo_vento_.php',
       rain: 'https://www.primierometeo.it/colbricon/wx4.html',
     },
-    hasWinterRainDisclaimer: true,
+    // hasWinterRainDisclaimer removed — Colbricon Express has reliable pluviometer
     weather: {
       condition: 'Sereno',
       conditionIcon: '☀️',
@@ -172,6 +172,7 @@ export const mockStations: WeatherStation[] = [
     lng: 11.782634,
     source: 'html',
     lastUpdate: '27/03/2026 ore 17:20',
+    unreachable: true,
     urls: {
       weather: 'https://www.primierometeo.it/passorolle/tabella.php',
       wind: 'https://www.primierometeo.it/passorolle/9meteo_vento_.php',
@@ -284,6 +285,7 @@ export const mockStations: WeatherStation[] = [
       weather: 'https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=T0450',
     },
     hasWindSensor: true,
+    hasRainSensor: true,
     weather: {
       condition: 'Sereno',
       conditionIcon: '☀️',
@@ -390,6 +392,7 @@ export const mockStations: WeatherStation[] = [
       weather: 'https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=T0103',
     },
     hasWindSensor: true,
+    hasRainSensor: true,
     weather: {
       condition: 'Sereno',
       conditionIcon: '🌙',
@@ -442,6 +445,7 @@ export const mockStations: WeatherStation[] = [
       weather: 'https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=T0104',
     },
     hasWindSensor: true,
+    hasRainSensor: true,
     weather: {
       condition: 'Sereno',
       conditionIcon: '🌙',

@@ -1,11 +1,15 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Flame, Radio, Waves, Mountain, LayoutGrid, Snowflake, Camera } from 'lucide-react';
+import { Flame, Radio, Waves, Mountain, LayoutGrid, Snowflake, Camera, RefreshCw } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
 // Show WindCard if station has a wind URL, is WunderGround, or has hasWindSensor flag
 const hasWind = (station: { urls: { wind?: string }; source: string; hasWindSensor?: boolean }): boolean =>
   !!station.urls.wind || station.source === 'wunderground' || !!station.hasWindSensor;
+
+// Show RainCard if station has a rain URL, is WunderGround, or has hasRainSensor flag
+const hasRain = (station: { urls: { rain?: string }; source: string; hasRainSensor?: boolean }): boolean =>
+  !!station.urls.rain || station.source === 'wunderground' || !!station.hasRainSensor;
 import { Button } from '@/components/ui/button';
 import { WeatherCard } from '@/components/dashboard/WeatherCard';
 import { RainCard } from '@/components/dashboard/RainCard';
@@ -77,6 +81,13 @@ const Index = () => {
           <div className="ml-auto flex items-center gap-3">
             <AlertBadge alert={mockAlert} />
             <AlertsBell alerts={allAlerts} onSelectStation={handleSelectStation} />
+            <button
+              onClick={() => window.location.reload()}
+              className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+              title="Aggiorna dati"
+            >
+              <RefreshCw className="h-4 w-4 text-muted-foreground" />
+            </button>
             <div className="flex items-center gap-1.5 text-xs text-success">
               <Radio className="h-3.5 w-3.5 animate-pulse" />
               <span className="font-medium">Live</span>
@@ -166,11 +177,13 @@ const Index = () => {
                 <div className={`mt-4 grid gap-6 ${hasWind(station) ? 'lg:grid-cols-2' : 'lg:grid-cols-1 max-w-2xl'}`}>
                   <WeatherCard data={station.weather} />
                   {hasWind(station) && <WindCard data={station.wind} />}
-                  <RainCard
-                    data={station.weather}
-                    rainUrl={station.urls.rain}
-                    hasWinterDisclaimer={station.hasWinterRainDisclaimer}
-                  />
+                  {hasRain(station) && (
+                    <RainCard
+                      data={station.weather}
+                      rainUrl={station.urls.rain}
+                      hasWinterDisclaimer={station.hasWinterRainDisclaimer}
+                    />
+                  )}
                 </div>
 
                 {/* Station webcams */}

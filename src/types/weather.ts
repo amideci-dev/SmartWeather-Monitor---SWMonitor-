@@ -16,6 +16,8 @@ export interface WeatherStation {
   };
   hasWinterRainDisclaimer?: boolean; // Pluviometer unreliable in winter
   hasWindSensor?: boolean; // XML stations: true if vento_al_suolo exists
+  hasRainSensor?: boolean; // XML stations: true if pluviometro exists
+  unreachable?: boolean; // Station currently unreachable
   weather: WeatherData;
   wind: WindData;
 }
