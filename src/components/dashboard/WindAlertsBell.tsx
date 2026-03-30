@@ -51,17 +51,20 @@ export function AlertsBell({ alerts, onSelectStation }: AlertsBellProps) {
   const dotColor = hasCritical ? 'bg-red-500' : hasHigh ? 'bg-orange-500' : 'bg-yellow-500';
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpen}>
       <PopoverTrigger asChild>
         <button className="relative p-1.5 rounded-lg hover:bg-muted transition-colors">
           <Bell className="h-5 w-5 text-muted-foreground" />
-          {alerts.length > 0 && (
+          {alerts.length > 0 && !seen && (
             <>
               <span className={`absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 rounded-full ${dotColor} text-[10px] font-bold text-white flex items-center justify-center`}>
                 {alerts.length}
               </span>
               <span className={`absolute -top-0.5 -right-0.5 h-4 min-w-[16px] rounded-full ${dotColor} animate-ping opacity-40`} />
             </>
+          )}
+          {alerts.length > 0 && seen && (
+            <span className={`absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full ${dotColor}`} />
           )}
         </button>
       </PopoverTrigger>
