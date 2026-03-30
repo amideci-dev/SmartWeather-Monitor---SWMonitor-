@@ -334,7 +334,9 @@ export const mockStations: WeatherStation[] = [
     urls: {
       weather: 'https://www.primierometeo.it/paradiso/tabella.php',
       wind: 'https://www.primierometeo.it/paradiso/9meteo_vento.php',
+      rain: 'https://www.primierometeo.it/paradiso/wx4.html',
     },
+    hasWinterRainDisclaimer: true,
     weather: {
       condition: 'Sereno',
       conditionIcon: '☀️',
