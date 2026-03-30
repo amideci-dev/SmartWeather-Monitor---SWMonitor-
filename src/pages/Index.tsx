@@ -110,6 +110,11 @@ const Index = () => {
                             XML
                           </span>
                         )}
+                        {s.source === 'wunderground' && (
+                          <span className="ml-1 rounded bg-info/20 px-1 text-[10px] text-info">
+                            WU
+                          </span>
+                        )}
                       </TabsTrigger>
                     ))}
                   </TabsList>

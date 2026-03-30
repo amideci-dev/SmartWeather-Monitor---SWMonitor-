@@ -1,4 +1,4 @@
-export type StationSource = 'html' | 'xml';
+export type StationSource = 'html' | 'xml' | 'wunderground';
 
 export interface WeatherStation {
   id: string;
@@ -43,6 +43,11 @@ export interface WeatherData {
     dailyRain: number;
     maxRainIntensity: number;
   };
+  // Extra fields (WeatherUnderground)
+  visibility?: number | null;      // km
+  snowDepth?: number | null;       // cm
+  uvIndex?: number | null;
+  airQualityIndex?: number | null;
 }
 
 export interface WindData {
