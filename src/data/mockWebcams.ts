@@ -2,7 +2,9 @@ export interface Webcam {
   id: string;
   name: string;
   url: string;
-  stationId: string | null; // null = standalone webcam
+  embedUrl?: string; // static image URL for embed (e.g. skylinewebcams)
+  externalUrl?: string; // link to open externally if different from url
+  stationId: string | null;
   lat: number;
   lng: number;
 }
@@ -80,7 +82,9 @@ export const standaloneWebcams: Webcam[] = [
   {
     id: 'cam-hotel-rosetta',
     name: 'San Martino Centro / Hotel Rosetta',
-    url: 'https://www.skylinewebcams.com/it/webcam/italia/trentino-alto-adige/trento/san-martino-di-castrozza.html',
+    embedUrl: 'https://embed.skylinewebcams.com/img/1203.jpg',
+    externalUrl: 'https://www.skylinewebcams.com/it/webcam/italia/trentino-alto-adige/trento/san-martino-di-castrozza.html',
+    url: 'https://embed.skylinewebcams.com/img/1203.jpg',
     stationId: null,
     lat: 46.262074,
     lng: 11.801482,
