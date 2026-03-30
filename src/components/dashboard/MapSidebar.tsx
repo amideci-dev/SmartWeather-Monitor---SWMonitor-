@@ -5,6 +5,7 @@ import { Map, Maximize2, Minimize2, Radar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { mockStations, mockHydrometers } from '@/data/mockStations';
+import { standaloneWebcams } from '@/data/mockWebcams';
 
 const MAPY_API_KEY = 'SUMTdyzTGlTJNZT1HcqtFViewMoHuB7iNzm1kMCfUsk';
 const WINDY_API_KEY = 'ogEMc7vYebttuafxuLL4HtSyh5Ho2pvl';
