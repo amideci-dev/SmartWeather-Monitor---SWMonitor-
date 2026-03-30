@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Flame, Radio, Waves, Mountain, LayoutGrid } from 'lucide-react';
+import { Flame, Radio, Waves, Mountain, LayoutGrid, Snowflake } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { WeatherCard } from '@/components/dashboard/WeatherCard';
 import { RainCard } from '@/components/dashboard/RainCard';
 import { WindCard } from '@/components/dashboard/WindCard';
+import { SnowCard } from '@/components/dashboard/SnowCard';
 import { StationHeader } from '@/components/dashboard/StationHeader';
 import { HydrometerCard } from '@/components/dashboard/HydrometerCard';
 import { MapSidebar } from '@/components/dashboard/MapSidebar';
@@ -18,6 +19,7 @@ import { AlertsBell } from '@/components/dashboard/WindAlertsBell';
 import { AlertBanner } from '@/components/dashboard/WindAlertBanner';
 import { StationsSummary } from '@/components/dashboard/StationsSummary';
 import { mockStations, mockHydrometers } from '@/data/mockStations';
+import { mockSnowStations } from '@/data/mockSnow';
 import { mockAlert } from '@/data/mockAlert';
 import { generateWindAlerts, generateHydroAlerts, StationAlert } from '@/lib/windAlerts';
 
@@ -157,6 +159,23 @@ const Index = () => {
               <div className="grid gap-6 lg:grid-cols-2">
                 {mockHydrometers.map((h) => (
                   <HydrometerCard key={h.id} data={h} />
+                ))}
+              </div>
+            </section>
+
+            {/* ─── Snow / Nivometers ─── */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <Snowflake className="h-5 w-5 text-info" />
+                <h2 className="text-lg font-bold">Nivometri e Campi Neve</h2>
+                <span className="ml-1 rounded-full bg-info/10 px-2 py-0.5 text-xs font-medium text-info">
+                  {mockSnowStations.length}
+                </span>
+              </div>
+
+              <div className="grid gap-6 lg:grid-cols-2">
+                {mockSnowStations.map((s) => (
+                  <SnowCard key={s.id} data={s} />
                 ))}
               </div>
             </section>
