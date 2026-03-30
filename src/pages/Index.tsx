@@ -94,7 +94,7 @@ const Index = () => {
         >
           <div className="px-4 py-6 space-y-8 max-w-5xl mx-auto">
             {/* ─── Summary Overview ─── */}
-            <section>
+            <section id="riepilogo">
               <div className="flex items-center gap-2 mb-4">
                 <LayoutGrid className="h-5 w-5 text-primary" />
                 <h2 className="text-lg font-bold">Riepilogo Stazioni</h2>
