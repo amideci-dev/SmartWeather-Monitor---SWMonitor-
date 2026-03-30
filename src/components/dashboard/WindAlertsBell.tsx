@@ -32,6 +32,12 @@ interface AlertsBellProps {
 
 export function AlertsBell({ alerts, onSelectStation }: AlertsBellProps) {
   const [open, setOpen] = useState(false);
+  const [seen, setSeen] = useState(false);
+
+  const handleOpen = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (isOpen && alerts.length > 0) setSeen(true);
+  };
 
   const hasCritical = alerts.some(a => {
     const sev = a.kind === 'wind' ? a.threshold.severity : a.severity;
