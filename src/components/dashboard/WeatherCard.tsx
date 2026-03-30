@@ -23,7 +23,7 @@ export function WeatherCard({ data }: WeatherCardProps) {
       </CardHeader>
       <CardContent className="space-y-5">
         {/* Main readings */}
-        <div className={`grid gap-4 ${data.pressure !== null ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        <div className={`grid gap-4 ${data.pressure !== null ? (data.humidity > 0 ? 'grid-cols-3' : 'grid-cols-2') : (data.humidity > 0 ? 'grid-cols-2' : 'grid-cols-1')}`}>
           {/* Temperature */}
           <div className="rounded-lg bg-muted/50 p-3 text-center">
             <p className="text-xs font-medium text-muted-foreground mb-1">Temperatura</p>
@@ -35,17 +35,19 @@ export function WeatherCard({ data }: WeatherCardProps) {
           </div>
 
           {/* Humidity */}
-          <div className="rounded-lg bg-muted/50 p-3 text-center">
-            <p className="text-xs font-medium text-muted-foreground mb-1">Umidità</p>
-            <div className="flex items-center justify-center gap-1">
-              <Droplets className="h-4 w-4 text-info" />
-              <p className="text-2xl font-bold font-mono">{data.humidity}%</p>
+          {data.humidity > 0 && (
+            <div className="rounded-lg bg-muted/50 p-3 text-center">
+              <p className="text-xs font-medium text-muted-foreground mb-1">Umidità</p>
+              <div className="flex items-center justify-center gap-1">
+                <Droplets className="h-4 w-4 text-info" />
+                <p className="text-2xl font-bold font-mono">{data.humidity}%</p>
+              </div>
+              <div className="flex items-center justify-center gap-1 mt-1">
+                <TrendIcon trend={data.humidityTrend} />
+                <span className="text-xs text-muted-foreground">{data.humidityTrendValue}%/h</span>
+              </div>
             </div>
-            <div className="flex items-center justify-center gap-1 mt-1">
-              <TrendIcon trend={data.humidityTrend} />
-              <span className="text-xs text-muted-foreground">{data.humidityTrendValue}%/h</span>
-            </div>
-          </div>
+          )}
 
           {/* Pressure */}
           {data.pressure !== null && (

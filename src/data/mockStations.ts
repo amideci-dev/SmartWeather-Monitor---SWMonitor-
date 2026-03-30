@@ -555,6 +555,7 @@ export const mockStations: WeatherStation[] = [
         dailyRain: 0.0,
         maxRainIntensity: 0.0,
       },
+      solarRadiation: 343,
     },
     wind: {
       direction: 'N',
