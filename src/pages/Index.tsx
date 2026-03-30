@@ -193,7 +193,7 @@ const Index = () => {
             )}
 
             {/* ─── Hydrometers ─── */}
-            <section>
+            <section id="idrometri">
               <div className="flex items-center gap-2 mb-4">
                 <Waves className="h-5 w-5 text-info" />
                 <h2 className="text-lg font-bold">Idrometri</h2>
