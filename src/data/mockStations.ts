@@ -15,7 +15,7 @@ export const mockStations: WeatherStation[] = [
       wind: 'https://www.primierometeo.it/colverde/9meteo_vento_.php',
       rain: 'https://www.primierometeo.it/colverde/wx4.html',
     },
-    hasWinterRainDisclaimer: true,
+    // hasWinterRainDisclaimer removed — Colverde has reliable pluviometer
     weather: {
       condition: 'Poco nuvoloso',
       conditionIcon: '⛅',
