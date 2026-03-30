@@ -61,12 +61,13 @@ const Index = () => {
             MeteoWatch <span className="text-accent">VVF</span>
           </h1>
 
-          <nav className="flex items-center gap-1 ml-2 sm:ml-6 overflow-x-auto scrollbar-none">
+          {/* Desktop nav */}
+          <nav className="hidden sm:flex items-center gap-1 ml-6">
             {[
               { id: 'riepilogo', label: 'Stazioni', icon: '📊' },
               { id: 'webcams', label: 'Webcams', icon: '📷' },
               { id: 'idrometri', label: 'Idrometri', icon: '🌊' },
-              { id: 'neve', label: 'Neve', icon: '❄️' },
+              { id: 'neve', label: 'Dati Neve', icon: '❄️' },
             ].map((item) => (
               <button
                 key={item.id}
@@ -74,9 +75,9 @@ const Index = () => {
                   const el = document.getElementById(item.id);
                   el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }}
-                className="px-2 py-1 rounded-md text-[11px] sm:text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap flex-shrink-0"
+                className="px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
-                <span className="hidden sm:inline">{item.icon} </span>{item.label}
+                {item.icon} {item.label}
               </button>
             ))}
           </nav>
@@ -91,12 +92,43 @@ const Index = () => {
             >
               <RefreshCw className="h-4 w-4 text-muted-foreground" />
             </button>
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              className="p-1.5 rounded-lg hover:bg-muted transition-colors sm:hidden"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
             <div className="hidden sm:flex items-center gap-1.5 text-xs text-success">
               <Radio className="h-3.5 w-3.5 animate-pulse" />
               <span className="font-medium">Live</span>
             </div>
           </div>
         </div>
+
+        {/* Mobile dropdown menu */}
+        {mobileMenuOpen && (
+          <nav className="sm:hidden border-t bg-card px-4 py-2 flex flex-col gap-1">
+            {[
+              { id: 'riepilogo', label: 'Stazioni', icon: '📊' },
+              { id: 'webcams', label: 'Webcams', icon: '📷' },
+              { id: 'idrometri', label: 'Idrometri', icon: '🌊' },
+              { id: 'neve', label: 'Dati Neve', icon: '❄️' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  const el = document.getElementById(item.id);
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+                className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-left"
+              >
+                {item.icon} {item.label}
+              </button>
+            ))}
+          </nav>
+        )
       </header>
 
       {/* Main layout: data (left) + map (right) */}
