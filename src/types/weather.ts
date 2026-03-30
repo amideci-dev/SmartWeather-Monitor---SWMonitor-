@@ -1,4 +1,4 @@
-export type StationSource = 'html' | 'xml';
+export type StationSource = 'html' | 'xml' | 'wunderground';
 
 export interface WeatherStation {
   id: string;
