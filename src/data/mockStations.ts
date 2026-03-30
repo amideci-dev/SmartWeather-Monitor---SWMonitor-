@@ -322,8 +322,8 @@ export const mockStations: WeatherStation[] = [
     source: 'html',
     lastUpdate: '30/03/2026 ore 22:20',
     urls: {
-      weather: 'https://www.primierometeo.it/stazioni.htm',
-      wind: 'https://www.primierometeo.it/paradiso/9meteo_vento_.php',
+      weather: 'https://www.primierometeo.it/paradiso/tabella.php',
+      wind: 'https://www.primierometeo.it/paradiso/9meteo_vento.php',
     },
     weather: {
       condition: 'Sereno',
