@@ -81,6 +81,13 @@ const Index = () => {
           <div className="ml-auto flex items-center gap-3">
             <AlertBadge alert={mockAlert} />
             <AlertsBell alerts={allAlerts} onSelectStation={handleSelectStation} />
+            <button
+              onClick={() => window.location.reload()}
+              className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+              title="Aggiorna dati"
+            >
+              <RefreshCw className="h-4 w-4 text-muted-foreground" />
+            </button>
             <div className="flex items-center gap-1.5 text-xs text-success">
               <Radio className="h-3.5 w-3.5 animate-pulse" />
               <span className="font-medium">Live</span>
