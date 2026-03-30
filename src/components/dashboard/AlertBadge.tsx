@@ -47,11 +47,13 @@ export function AlertBadge({ alert }: AlertBadgeProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button
-          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors hover:opacity-80 ${colors.badge} animate-pulse cursor-pointer`}
+          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors hover:opacity-80 ${colors.badge} animate-pulse cursor-pointer max-sm:flex-col max-sm:gap-0.5 max-sm:px-2 max-sm:py-0.5 max-sm:text-[10px]`}
         >
-          <AlertTriangle className="h-3.5 w-3.5" />
-          Allerta {alert.level.charAt(0).toUpperCase() + alert.level.slice(1)}
-          <span className="font-normal opacity-90">{alert.dateFrom} → {alert.dateTo}</span>
+          <span className="flex items-center gap-1">
+            <AlertTriangle className="h-3.5 w-3.5 max-sm:h-3 max-sm:w-3" />
+            <span>Allerta {alert.level.charAt(0).toUpperCase() + alert.level.slice(1)}</span>
+          </span>
+          <span className="font-normal opacity-90 max-sm:text-[9px]">{alert.dateFrom} → {alert.dateTo}</span>
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">

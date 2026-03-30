@@ -33,6 +33,7 @@ import { generateWindAlerts, generateHydroAlerts, StationAlert } from '@/lib/win
 const Index = () => {
   const [activeStation, setActiveStation] = useState<string | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
+  const [mobileMapOpen, setMobileMapOpen] = useState(false);
   const windAlerts = useMemo(() => generateWindAlerts(mockStations), []);
   const hydroAlerts = useMemo(() => generateHydroAlerts(mockHydrometers), []);
   const allAlerts: StationAlert[] = useMemo(() => [...windAlerts, ...hydroAlerts], [windAlerts, hydroAlerts]);
@@ -241,7 +242,7 @@ const Index = () => {
           </div>
         </main>
 
-        {/* Map sidebar */}
+        {/* Map sidebar — desktop */}
         <aside
           className="relative z-0 hidden md:block transition-all duration-300"
           style={{ width: mapExpanded ? '60%' : '25%', minWidth: mapExpanded ? '400px' : '280px', flexShrink: 0 }}
@@ -252,6 +253,35 @@ const Index = () => {
             onSelectStation={handleSelectStation}
           />
         </aside>
+
+        {/* Map sidebar — mobile slide-in */}
+        {mobileMapOpen && (
+          <div className="fixed inset-0 z-[200] md:hidden flex">
+            <div
+              className="absolute inset-0 bg-black/40"
+              onClick={() => setMobileMapOpen(false)}
+            />
+            <div className="relative ml-auto w-[85%] max-w-md h-full">
+              <MapSidebar
+                expanded={true}
+                onToggleExpand={() => setMobileMapOpen(false)}
+                onSelectStation={(id) => {
+                  handleSelectStation(id);
+                  setMobileMapOpen(false);
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Mobile map toggle label */}
+        <button
+          onClick={() => setMobileMapOpen(true)}
+          className="fixed right-0 top-1/2 -translate-y-1/2 z-[150] md:hidden bg-primary text-primary-foreground px-1.5 py-3 rounded-l-lg shadow-lg flex flex-col items-center gap-1 text-[10px] font-bold writing-vertical"
+          style={{ writingMode: 'vertical-rl' }}
+        >
+          🗺️ Mappa
+        </button>
       </div>
     </div>
   );
