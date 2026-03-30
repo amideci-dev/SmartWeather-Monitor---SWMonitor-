@@ -295,9 +295,9 @@ const Index = () => {
           <div className="flex items-center justify-between bg-card border-b px-3 py-2 shrink-0">
             <button
               onClick={() => setMobileMapOpen(false)}
-              className="p-1.5 rounded-lg hover:bg-muted transition-colors text-sm font-medium"
+              className="p-1.5 rounded-lg hover:bg-muted transition-colors"
             >
-              ← Chiudi
+              <X className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
               <button
