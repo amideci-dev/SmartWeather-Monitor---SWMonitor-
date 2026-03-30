@@ -229,7 +229,9 @@ export const mockStations: WeatherStation[] = [
     urls: {
       weather: 'https://www.primierometeo.it/funivia/tabella.php',
       wind: 'https://www.primierometeo.it/funivia/9meteo_vento_.php',
+      rain: 'https://www.primierometeo.it/funivia/wx4.html',
     },
+    hasWinterRainDisclaimer: true,
     weather: {
       condition: 'Poco nuvoloso',
       conditionIcon: '⛅',
