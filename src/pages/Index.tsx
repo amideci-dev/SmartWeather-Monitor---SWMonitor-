@@ -35,6 +35,7 @@ const Index = () => {
   const [mapExpanded, setMapExpanded] = useState(false);
   const [mobileMapOpen, setMobileMapOpen] = useState(false);
   const [mobileMapTab, setMobileMapTab] = useState<'mappa' | 'radar'>('mappa');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const windAlerts = useMemo(() => generateWindAlerts(mockStations), []);
   const hydroAlerts = useMemo(() => generateHydroAlerts(mockHydrometers), []);
   const allAlerts: StationAlert[] = useMemo(() => [...windAlerts, ...hydroAlerts], [windAlerts, hydroAlerts]);
