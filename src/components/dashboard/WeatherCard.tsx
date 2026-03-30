@@ -122,6 +122,12 @@ export function WeatherCard({ data }: WeatherCardProps) {
                   <span className="font-mono font-medium">{data.airQualityIndex} AQI</span>
                 </div>
               )}
+              {data.solarRadiation != null && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground flex items-center gap-1"><Zap className="h-3 w-3" /> Radiazione solare</span>
+                  <span className="font-mono font-medium">{data.solarRadiation} W/m²</span>
+                </div>
+              )}
             </div>
           </div>
         )}
