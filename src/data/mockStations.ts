@@ -67,7 +67,9 @@ export const mockStations: WeatherStation[] = [
     urls: {
       weather: 'https://www.primierometeo.it/puntaces/tabella.php',
       wind: 'https://www.primierometeo.it/puntaces/9meteo_vento_.php',
+      rain: 'https://www.primierometeo.it/puntaces/wx4.html',
     },
+    hasWinterRainDisclaimer: true,
     weather: {
       condition: 'Poco nuvoloso',
       conditionIcon: '⛅',
