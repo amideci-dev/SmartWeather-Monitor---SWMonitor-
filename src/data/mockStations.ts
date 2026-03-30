@@ -172,6 +172,7 @@ export const mockStations: WeatherStation[] = [
     lng: 11.782634,
     source: 'html',
     lastUpdate: '27/03/2026 ore 17:20',
+    unreachable: true,
     urls: {
       weather: 'https://www.primierometeo.it/passorolle/tabella.php',
       wind: 'https://www.primierometeo.it/passorolle/9meteo_vento_.php',
