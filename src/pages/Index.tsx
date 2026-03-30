@@ -54,6 +54,26 @@ const Index = () => {
             MeteoWatch <span className="text-accent">VVF</span>
           </h1>
 
+          <nav className="hidden sm:flex items-center gap-1 ml-6">
+            {[
+              { id: 'riepilogo', label: 'Stazioni', icon: '📊' },
+              { id: 'webcams', label: 'Webcams', icon: '📷' },
+              { id: 'idrometri', label: 'Idrometri', icon: '🌊' },
+              { id: 'neve', label: 'Dati Neve', icon: '❄️' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  const el = document.getElementById(item.id);
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+                className="px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {item.icon} {item.label}
+              </button>
+            ))}
+          </nav>
+
           <div className="ml-auto flex items-center gap-3">
             <AlertBadge alert={mockAlert} />
             <AlertsBell alerts={allAlerts} onSelectStation={handleSelectStation} />
@@ -74,7 +94,7 @@ const Index = () => {
         >
           <div className="px-4 py-6 space-y-8 max-w-5xl mx-auto">
             {/* ─── Summary Overview ─── */}
-            <section>
+            <section id="riepilogo">
               <div className="flex items-center gap-2 mb-4">
                 <LayoutGrid className="h-5 w-5 text-primary" />
                 <h2 className="text-lg font-bold">Riepilogo Stazioni</h2>
@@ -100,7 +120,9 @@ const Index = () => {
 
             {/* ─── Webcams (collapsible, only on summary) ─── */}
             {!activeStation && (
-              <WebcamsSection onSelectStation={handleSelectStation} />
+              <div id="webcams">
+                <WebcamsSection onSelectStation={handleSelectStation} />
+              </div>
             )}
 
             {station && (
@@ -171,7 +193,7 @@ const Index = () => {
             )}
 
             {/* ─── Hydrometers ─── */}
-            <section>
+            <section id="idrometri">
               <div className="flex items-center gap-2 mb-4">
                 <Waves className="h-5 w-5 text-info" />
                 <h2 className="text-lg font-bold">Idrometri</h2>
@@ -188,7 +210,7 @@ const Index = () => {
             </section>
 
             {/* ─── Snow / Nivometers ─── */}
-            <section>
+            <section id="neve">
               <div className="flex items-center gap-2 mb-4">
                 <Snowflake className="h-5 w-5 text-info" />
                 <h2 className="text-lg font-bold">Nivometri e Campi Neve</h2>
