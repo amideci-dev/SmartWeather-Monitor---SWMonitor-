@@ -177,11 +177,13 @@ const Index = () => {
                 <div className={`mt-4 grid gap-6 ${hasWind(station) ? 'lg:grid-cols-2' : 'lg:grid-cols-1 max-w-2xl'}`}>
                   <WeatherCard data={station.weather} />
                   {hasWind(station) && <WindCard data={station.wind} />}
-                  <RainCard
-                    data={station.weather}
-                    rainUrl={station.urls.rain}
-                    hasWinterDisclaimer={station.hasWinterRainDisclaimer}
-                  />
+                  {hasRain(station) && (
+                    <RainCard
+                      data={station.weather}
+                      rainUrl={station.urls.rain}
+                      hasWinterDisclaimer={station.hasWinterRainDisclaimer}
+                    />
+                  )}
                 </div>
 
                 {/* Station webcams */}
