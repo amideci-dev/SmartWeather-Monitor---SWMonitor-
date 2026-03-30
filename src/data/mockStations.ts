@@ -123,7 +123,7 @@ export const mockStations: WeatherStation[] = [
       wind: 'https://www.primierometeo.it/colbricon/9meteo_vento_.php',
       rain: 'https://www.primierometeo.it/colbricon/wx4.html',
     },
-    hasWinterRainDisclaimer: true,
+    // hasWinterRainDisclaimer removed — Colbricon Express has reliable pluviometer
     weather: {
       condition: 'Sereno',
       conditionIcon: '☀️',
