@@ -1,4 +1,4 @@
-import { Thermometer, Droplets, Gauge, CloudRain, ArrowDown, ArrowUp, Minus } from 'lucide-react';
+import { Thermometer, Droplets, Gauge, CloudRain, ArrowDown, ArrowUp, Minus, Eye, Snowflake, Sun, Wind as WindIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WeatherData } from '@/types/weather';
 
