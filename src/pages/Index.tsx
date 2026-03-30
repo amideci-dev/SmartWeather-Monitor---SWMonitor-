@@ -172,7 +172,7 @@ const Index = () => {
               </div>
 
               {!activeStation && (
-                <StationsSummary onSelectStation={handleSelectStation} />
+                <StationsSummary stations={stations} onSelectStation={handleSelectStation} />
               )}
             </section>
 
