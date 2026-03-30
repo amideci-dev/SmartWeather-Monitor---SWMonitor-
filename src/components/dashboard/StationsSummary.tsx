@@ -2,22 +2,23 @@ import { useState } from 'react';
 import { Thermometer, Wind, Droplets, Gauge, Mountain, ArrowRight, Sun, X, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { mockStations } from '@/data/mockStations';
+import { WeatherStation } from '@/types/weather';
 
 // Show wind if station has a wind URL, is WunderGround, or has hasWindSensor flag
 const hasWind = (station: { urls: { wind?: string }; source: string; hasWindSensor?: boolean }): boolean =>
   !!station.urls.wind || station.source === 'wunderground' || !!station.hasWindSensor;
 
 interface StationsSummaryProps {
+  stations: WeatherStation[];
   onSelectStation: (id: string) => void;
 }
 
-export function StationsSummary({ onSelectStation }: StationsSummaryProps) {
+export function StationsSummary({ stations, onSelectStation }: StationsSummaryProps) {
   const [dismissedWarnings, setDismissedWarnings] = useState<Set<string>>(new Set());
 
   return (
     <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-      {mockStations.map((s) => {
+      {stations.map((s) => {
         const trendArrow =
           s.weather.temperatureTrend === 'rising'
             ? '↑'
