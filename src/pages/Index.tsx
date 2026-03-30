@@ -162,6 +162,23 @@ const Index = () => {
                 ))}
               </div>
             </section>
+
+            {/* ─── Snow / Nivometers ─── */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <Snowflake className="h-5 w-5 text-info" />
+                <h2 className="text-lg font-bold">Nivometri e Campi Neve</h2>
+                <span className="ml-1 rounded-full bg-info/10 px-2 py-0.5 text-xs font-medium text-info">
+                  {mockSnowStations.length}
+                </span>
+              </div>
+
+              <div className="grid gap-6 lg:grid-cols-2">
+                {mockSnowStations.map((s) => (
+                  <SnowCard key={s.id} data={s} />
+                ))}
+              </div>
+            </section>
           </div>
         </main>
 
