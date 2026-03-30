@@ -18,9 +18,12 @@ import { AlertBadge } from '@/components/dashboard/AlertBadge';
 import { AlertsBell } from '@/components/dashboard/WindAlertsBell';
 import { AlertBanner } from '@/components/dashboard/WindAlertBanner';
 import { StationsSummary } from '@/components/dashboard/StationsSummary';
+import { WebcamsSection } from '@/components/dashboard/WebcamsSection';
+import { WebcamCard } from '@/components/dashboard/WebcamCard';
 import { mockStations, mockHydrometers } from '@/data/mockStations';
 import { mockSnowStations } from '@/data/mockSnow';
 import { mockAlert } from '@/data/mockAlert';
+import { stationWebcams } from '@/data/mockWebcams';
 import { generateWindAlerts, generateHydroAlerts, StationAlert } from '@/lib/windAlerts';
 
 const Index = () => {
