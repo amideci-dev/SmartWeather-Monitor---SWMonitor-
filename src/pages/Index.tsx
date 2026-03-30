@@ -255,32 +255,32 @@ const Index = () => {
         </aside>
 
         {/* Map sidebar — mobile slide-in */}
-        {mobileMapOpen && (
-          <div className="fixed inset-0 z-[200] md:hidden flex">
-            <div
-              className="absolute inset-0 bg-black/40"
-              onClick={() => setMobileMapOpen(false)}
+        <div
+          className={`fixed inset-0 z-[200] md:hidden flex transition-opacity duration-300 ${mobileMapOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        >
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setMobileMapOpen(false)}
+          />
+          <div className={`relative ml-auto w-[85%] max-w-md h-full transition-transform duration-300 ${mobileMapOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <MapSidebar
+              expanded={true}
+              onToggleExpand={() => setMobileMapOpen(false)}
+              onSelectStation={(id) => {
+                handleSelectStation(id);
+                setMobileMapOpen(false);
+              }}
             />
-            <div className="relative ml-auto w-[85%] max-w-md h-full">
-              <MapSidebar
-                expanded={true}
-                onToggleExpand={() => setMobileMapOpen(false)}
-                onSelectStation={(id) => {
-                  handleSelectStation(id);
-                  setMobileMapOpen(false);
-                }}
-              />
-            </div>
           </div>
-        )}
+        </div>
 
-        {/* Mobile map toggle label */}
+        {/* Mobile map toggle label — always visible */}
         <button
-          onClick={() => setMobileMapOpen(true)}
-          className="fixed right-0 top-1/2 -translate-y-1/2 z-[150] md:hidden bg-primary text-primary-foreground px-1.5 py-3 rounded-l-lg shadow-lg flex flex-col items-center gap-1 text-[10px] font-bold writing-vertical"
+          onClick={() => setMobileMapOpen((v) => !v)}
+          className={`fixed right-0 top-1/2 -translate-y-1/2 z-[250] md:hidden px-1.5 py-3 rounded-l-lg shadow-lg flex flex-col items-center gap-1 text-[10px] font-bold ${mobileMapOpen ? 'bg-destructive text-destructive-foreground' : 'bg-primary text-primary-foreground'}`}
           style={{ writingMode: 'vertical-rl' }}
         >
-          🗺️ Mappa
+          {mobileMapOpen ? '✕ Chiudi' : '🗺️ Mappa'}
         </button>
       </div>
     </div>
