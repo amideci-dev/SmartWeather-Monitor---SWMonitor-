@@ -24,11 +24,13 @@ import { AlertBanner } from '@/components/dashboard/WindAlertBanner';
 import { StationsSummary } from '@/components/dashboard/StationsSummary';
 import { WebcamsSection } from '@/components/dashboard/WebcamsSection';
 import { WebcamCard } from '@/components/dashboard/WebcamCard';
-import { mockStations, mockHydrometers } from '@/data/mockStations';
+import { mockHydrometers } from '@/data/mockStations';
 import { mockSnowStations } from '@/data/mockSnow';
 import { mockAlert } from '@/data/mockAlert';
 import { stationWebcams } from '@/data/mockWebcams';
 import { generateWindAlerts, generateHydroAlerts, StationAlert } from '@/lib/windAlerts';
+import { useLiveWeatherData } from '@/hooks/useLiveWeatherData';
+import { mergeStationsWithLiveData } from '@/lib/mergeData';
 
 const Index = () => {
   const [activeStation, setActiveStation] = useState<string | null>(null);
@@ -36,12 +38,22 @@ const Index = () => {
   const [mobileMapOpen, setMobileMapOpen] = useState(false);
   const [mobileMapTab, setMobileMapTab] = useState<'mappa' | 'radar'>('mappa');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const windAlerts = useMemo(() => generateWindAlerts(mockStations), []);
+
+  // Fetch live data
+  const { data: liveData, isLoading: isLiveLoading } = useLiveWeatherData();
+
+  // Merge live data with mock station definitions
+  const stations = useMemo(
+    () => mergeStationsWithLiveData(liveData?.stations),
+    [liveData]
+  );
+
+  const windAlerts = useMemo(() => generateWindAlerts(stations), [stations]);
   const hydroAlerts = useMemo(() => generateHydroAlerts(mockHydrometers), []);
   const allAlerts: StationAlert[] = useMemo(() => [...windAlerts, ...hydroAlerts], [windAlerts, hydroAlerts]);
 
   const station = activeStation
-    ? mockStations.find((s) => s.id === activeStation) ?? null
+    ? stations.find((s) => s.id === activeStation) ?? null
     : null;
 
   const handleSelectStation = useCallback((id: string) => {
