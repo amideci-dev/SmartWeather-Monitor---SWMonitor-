@@ -120,7 +120,9 @@ const Index = () => {
 
             {/* ─── Webcams (collapsible, only on summary) ─── */}
             {!activeStation && (
-              <WebcamsSection onSelectStation={handleSelectStation} />
+              <div id="webcams">
+                <WebcamsSection onSelectStation={handleSelectStation} />
+              </div>
             )}
 
             {station && (
