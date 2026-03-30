@@ -79,7 +79,7 @@ const Index = () => {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2 sm:gap-3">
             <AlertBadge alert={mockAlert} />
             <AlertsBell alerts={allAlerts} onSelectStation={handleSelectStation} />
             <button
@@ -89,7 +89,7 @@ const Index = () => {
             >
               <RefreshCw className="h-4 w-4 text-muted-foreground" />
             </button>
-            <div className="flex items-center gap-1.5 text-xs text-success">
+            <div className="hidden sm:flex items-center gap-1.5 text-xs text-success">
               <Radio className="h-3.5 w-3.5 animate-pulse" />
               <span className="font-medium">Live</span>
             </div>
