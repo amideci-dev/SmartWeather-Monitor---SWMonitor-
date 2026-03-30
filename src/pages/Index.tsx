@@ -1,6 +1,11 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Flame, Radio, Waves, Mountain, LayoutGrid } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { WindData } from '@/types/weather';
+
+const hasWindData = (wind: WindData): boolean =>
+  wind.speed > 0 || wind.gusts.today > 0 || wind.gusts.lastHour > 0 ||
+  wind.averages.min10 > 0 || wind.averages.min60 > 0;
 import { Button } from '@/components/ui/button';
 import { WeatherCard } from '@/components/dashboard/WeatherCard';
 import { WindCard } from '@/components/dashboard/WindCard';
