@@ -255,35 +255,55 @@ const Index = () => {
           />
         </aside>
 
-        {/* Map sidebar — mobile slide-in (below header) */}
+        {/* Map — mobile fullscreen overlay ABOVE header */}
         <div
-          className={`fixed top-0 left-0 right-0 bottom-0 z-[110] md:hidden flex transition-opacity duration-300 ${mobileMapOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+          className={`fixed inset-0 z-[300] md:hidden flex flex-col transition-opacity duration-300 ${mobileMapOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         >
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setMobileMapOpen(false)}
-          />
-          {/* Close label on left edge of map panel */}
-          <button
-            onClick={() => setMobileMapOpen(false)}
-            className={`absolute left-[15%] top-1/2 -translate-y-1/2 -translate-x-full z-[260] bg-destructive text-destructive-foreground px-1.5 py-3 rounded-l-lg shadow-lg text-[10px] font-bold transition-transform duration-300 ${mobileMapOpen ? 'translate-x-0' : 'translate-x-full'}`}
-            style={{ writingMode: 'vertical-rl', left: 'calc(100% - 85%)' }}
-          >
-            ✕ Chiudi
-          </button>
-          <div className={`relative ml-auto w-[85%] max-w-md h-full transition-transform duration-300 ${mobileMapOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-            <MapSidebar
-              expanded={true}
-              onToggleExpand={() => setMobileMapOpen(false)}
-              onSelectStation={(id) => {
-                handleSelectStation(id);
-                setMobileMapOpen(false);
-              }}
-            />
+          <div className="flex items-center justify-between bg-card border-b px-3 py-2 shrink-0">
+            <button
+              onClick={() => setMobileMapOpen(false)}
+              className="p-1.5 rounded-lg hover:bg-muted transition-colors text-sm font-medium"
+            >
+              ← Chiudi
+            </button>
+            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
+              <button
+                onClick={() => setMobileMapTab('mappa')}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${mobileMapTab === 'mappa' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'}`}
+              >
+                🗺️ Mappa
+              </button>
+              <button
+                onClick={() => setMobileMapTab('radar')}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${mobileMapTab === 'radar' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'}`}
+              >
+                📡 Radar
+              </button>
+            </div>
+            <div className="w-16" />
+          </div>
+          <div className="flex-1 min-h-0">
+            {mobileMapTab === 'mappa' ? (
+              <MapSidebar
+                expanded={true}
+                onToggleExpand={() => setMobileMapOpen(false)}
+                onSelectStation={(id) => {
+                  handleSelectStation(id);
+                  setMobileMapOpen(false);
+                }}
+              />
+            ) : (
+              <iframe
+                className="h-full w-full border-0"
+                src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=km/h&zoom=11&overlay=radar&product=radar&level=surface&lat=46.265&lon=11.800"
+                title="Windy Radar"
+                allow="fullscreen"
+              />
+            )}
           </div>
         </div>
 
-        {/* Mobile map open label — only when closed */}
+        {/* Mobile map open label */}
         {!mobileMapOpen && (
           <button
             onClick={() => setMobileMapOpen(true)}
