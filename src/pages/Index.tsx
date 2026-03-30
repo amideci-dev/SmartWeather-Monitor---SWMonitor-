@@ -3,10 +3,9 @@ import { Flame, Radio, Waves, Mountain, LayoutGrid } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
-// Stations without a wind sensor have all values at 0 AND no wind URL
-// Calm wind (all zeros) should still show the card if the station has the sensor
-const hasWindSensor = (station: { urls: { wind?: string }; source: string }): boolean =>
-  !!station.urls.wind || station.source === 'wunderground';
+// Show WindCard if station has a wind URL, is WunderGround, or has hasWindSensor flag
+const hasWind = (station: { urls: { wind?: string }; source: string; hasWindSensor?: boolean }): boolean =>
+  !!station.urls.wind || station.source === 'wunderground' || !!station.hasWindSensor;
 import { Button } from '@/components/ui/button';
 import { WeatherCard } from '@/components/dashboard/WeatherCard';
 import { RainCard } from '@/components/dashboard/RainCard';
