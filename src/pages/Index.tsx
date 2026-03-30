@@ -126,9 +126,9 @@ const Index = () => {
                 </div>
 
                 {/* Cards grid */}
-                <div className="mt-4 grid gap-6 lg:grid-cols-2">
+                <div className={`mt-4 grid gap-6 ${hasWindData(station.wind) ? 'lg:grid-cols-2' : 'lg:grid-cols-1 max-w-2xl'}`}>
                   <WeatherCard data={station.weather} />
-                  <WindCard data={station.wind} />
+                  {hasWindData(station.wind) && <WindCard data={station.wind} />}
                 </div>
               </section>
             )}
