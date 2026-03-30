@@ -389,6 +389,7 @@ export const mockStations: WeatherStation[] = [
     urls: {
       weather: 'https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=T0103',
     },
+    hasWindSensor: true,
     weather: {
       condition: 'Sereno',
       conditionIcon: '🌙',
