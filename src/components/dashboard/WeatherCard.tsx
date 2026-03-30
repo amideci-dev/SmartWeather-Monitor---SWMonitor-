@@ -92,7 +92,7 @@ export function WeatherCard({ data }: WeatherCardProps) {
         </div>
 
         {/* Extra WU fields */}
-        {(data.visibility != null || data.snowDepth != null || data.uvIndex != null || data.airQualityIndex != null) && (
+        {(data.visibility != null || data.snowDepth != null || data.uvIndex != null || data.airQualityIndex != null || data.solarRadiation != null) && (
           <div className="border-t pt-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
               Dati aggiuntivi
