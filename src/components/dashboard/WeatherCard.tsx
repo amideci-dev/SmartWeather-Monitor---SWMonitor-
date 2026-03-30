@@ -89,6 +89,41 @@ export function WeatherCard({ data }: WeatherCardProps) {
           </div>
         </div>
 
+        {/* Extra WU fields */}
+        {(data.visibility != null || data.snowDepth != null || data.uvIndex != null || data.airQualityIndex != null) && (
+          <div className="border-t pt-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              Dati aggiuntivi
+            </p>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+              {data.visibility != null && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground flex items-center gap-1"><Eye className="h-3 w-3" /> Visibilità</span>
+                  <span className="font-mono font-medium">{data.visibility} km</span>
+                </div>
+              )}
+              {data.snowDepth != null && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground flex items-center gap-1"><Snowflake className="h-3 w-3" /> Neve al suolo</span>
+                  <span className="font-mono font-medium">{data.snowDepth} cm</span>
+                </div>
+              )}
+              {data.uvIndex != null && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground flex items-center gap-1"><Sun className="h-3 w-3" /> Indice UV</span>
+                  <span className="font-mono font-medium">{data.uvIndex}</span>
+                </div>
+              )}
+              {data.airQualityIndex != null && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground flex items-center gap-1"><WindIcon className="h-3 w-3" /> Qualità aria</span>
+                  <span className="font-mono font-medium">{data.airQualityIndex} AQI</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Daily Extremes */}
         <div className="border-t pt-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
