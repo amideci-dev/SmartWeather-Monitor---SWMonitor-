@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Camera, ChevronDown, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { WebcamCard } from './WebcamCard';
 import { allWebcams } from '@/data/mockWebcams';
 
@@ -8,8 +9,17 @@ interface WebcamsSectionProps {
 }
 
 export function WebcamsSection({ onSelectStation }: WebcamsSectionProps) {
-  const [expanded, setExpanded] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+  const [expanded, setExpanded] = useState(!isMobile);
 
+  useEffect(() => {
+    const handler = () => {
+      const mobile = window.innerWidth < 640;
+      setIsMobile(mobile);
+    };
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
   return (
     <section>
       <button
