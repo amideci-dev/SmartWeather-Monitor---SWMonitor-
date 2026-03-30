@@ -340,10 +340,11 @@ const Index = () => {
         {!mobileMapOpen && (
           <button
             onClick={() => setMobileMapOpen(true)}
-            className="fixed right-0 top-1/2 -translate-y-1/2 z-[150] md:hidden bg-primary text-primary-foreground px-1.5 py-3 rounded-l-lg shadow-lg text-[10px] font-bold"
+            className="fixed right-0 top-1/2 -translate-y-1/2 z-[150] md:hidden bg-primary text-primary-foreground px-1.5 py-3 rounded-l-lg shadow-lg text-[10px] font-bold flex flex-col items-center gap-2"
             style={{ writingMode: 'vertical-rl' }}
           >
-            🗺️ Mappa
+            <span>🗺️ Mappa</span>
+            <span className="border-t border-primary-foreground/30 pt-1">📡 Radar</span>
           </button>
         )}
       </div>
