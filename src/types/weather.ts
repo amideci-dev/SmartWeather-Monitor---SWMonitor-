@@ -12,7 +12,9 @@ export interface WeatherStation {
   urls: {
     weather: string;
     wind?: string; // XML stations have wind in same URL
+    rain?: string; // Pluviometer page URL
   };
+  hasWinterRainDisclaimer?: boolean; // Pluviometer unreliable in winter
   weather: WeatherData;
   wind: WindData;
 }
