@@ -98,3 +98,30 @@ export interface HydrometerReading {
   level: number;
   flow: number | null;
 }
+
+// ─── Snow / Nivometer types ───
+
+export interface SnowFieldReading {
+  date: string;       // YYYY-MM-DD
+  hs: number | null;  // snow depth at ground (cm)
+  hn: number | null;  // fresh snow (cm)
+}
+
+export interface SnowStation {
+  id: string;
+  name: string;
+  location: string;
+  altitude: number;
+  lat: number;
+  lng: number;
+  linkedStationId: string; // links to WeatherStation.id
+  urls: {
+    nivometro: string;     // auto nivometer page
+    campoNeve: string;     // manual field page
+    campoNeveJson: string; // JSON API for field data
+  };
+  campoNeveCode: string;   // e.g. '4SMC', '31RO'
+  lastUpdate: string;
+  currentDepth: number;     // from automatic nivometer (cm)
+  history: SnowFieldReading[]; // last ~30 days from campo neve
+}
