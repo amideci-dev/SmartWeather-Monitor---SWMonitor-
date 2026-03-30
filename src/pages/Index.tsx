@@ -254,9 +254,9 @@ const Index = () => {
           />
         </aside>
 
-        {/* Map sidebar — mobile slide-in */}
+        {/* Map sidebar — mobile slide-in (below header) */}
         <div
-          className={`fixed inset-0 z-[200] md:hidden flex transition-opacity duration-300 ${mobileMapOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+          className={`fixed top-0 left-0 right-0 bottom-0 z-[110] md:hidden flex transition-opacity duration-300 ${mobileMapOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         >
           <div
             className="absolute inset-0 bg-black/40"
