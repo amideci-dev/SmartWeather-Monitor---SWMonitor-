@@ -6,6 +6,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // Show WindCard if station has a wind URL, is WunderGround, or has hasWindSensor flag
 const hasWind = (station: { urls: { wind?: string }; source: string; hasWindSensor?: boolean }): boolean =>
   !!station.urls.wind || station.source === 'wunderground' || !!station.hasWindSensor;
+
+// Show RainCard if station has a rain URL, is WunderGround, or has hasRainSensor flag
+const hasRain = (station: { urls: { rain?: string }; source: string; hasRainSensor?: boolean }): boolean =>
+  !!station.urls.rain || station.source === 'wunderground' || !!station.hasRainSensor;
 import { Button } from '@/components/ui/button';
 import { WeatherCard } from '@/components/dashboard/WeatherCard';
 import { RainCard } from '@/components/dashboard/RainCard';
