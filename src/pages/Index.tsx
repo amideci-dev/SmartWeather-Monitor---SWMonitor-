@@ -210,7 +210,7 @@ const Index = () => {
             </section>
 
             {/* ─── Snow / Nivometers ─── */}
-            <section>
+            <section id="neve">
               <div className="flex items-center gap-2 mb-4">
                 <Snowflake className="h-5 w-5 text-info" />
                 <h2 className="text-lg font-bold">Nivometri e Campi Neve</h2>
