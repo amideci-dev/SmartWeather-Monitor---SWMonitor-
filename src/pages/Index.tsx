@@ -59,12 +59,12 @@ const Index = () => {
             MeteoWatch <span className="text-accent">VVF</span>
           </h1>
 
-          <nav className="hidden sm:flex items-center gap-1 ml-6">
+          <nav className="flex items-center gap-1 ml-2 sm:ml-6 overflow-x-auto scrollbar-none">
             {[
               { id: 'riepilogo', label: 'Stazioni', icon: '📊' },
               { id: 'webcams', label: 'Webcams', icon: '📷' },
               { id: 'idrometri', label: 'Idrometri', icon: '🌊' },
-              { id: 'neve', label: 'Dati Neve', icon: '❄️' },
+              { id: 'neve', label: 'Neve', icon: '❄️' },
             ].map((item) => (
               <button
                 key={item.id}
@@ -72,9 +72,9 @@ const Index = () => {
                   const el = document.getElementById(item.id);
                   el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }}
-                className="px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="px-2 py-1 rounded-md text-[11px] sm:text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap flex-shrink-0"
               >
-                {item.icon} {item.label}
+                <span className="hidden sm:inline">{item.icon} </span>{item.label}
               </button>
             ))}
           </nav>
@@ -254,14 +254,22 @@ const Index = () => {
           />
         </aside>
 
-        {/* Map sidebar — mobile slide-in */}
+        {/* Map sidebar — mobile slide-in (below header) */}
         <div
-          className={`fixed inset-0 z-[200] md:hidden flex transition-opacity duration-300 ${mobileMapOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+          className={`fixed top-0 left-0 right-0 bottom-0 z-[110] md:hidden flex transition-opacity duration-300 ${mobileMapOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         >
           <div
             className="absolute inset-0 bg-black/40"
             onClick={() => setMobileMapOpen(false)}
           />
+          {/* Close label on left edge of map panel */}
+          <button
+            onClick={() => setMobileMapOpen(false)}
+            className={`absolute left-[15%] top-1/2 -translate-y-1/2 -translate-x-full z-[260] bg-destructive text-destructive-foreground px-1.5 py-3 rounded-l-lg shadow-lg text-[10px] font-bold transition-transform duration-300 ${mobileMapOpen ? 'translate-x-0' : 'translate-x-full'}`}
+            style={{ writingMode: 'vertical-rl', left: 'calc(100% - 85%)' }}
+          >
+            ✕ Chiudi
+          </button>
           <div className={`relative ml-auto w-[85%] max-w-md h-full transition-transform duration-300 ${mobileMapOpen ? 'translate-x-0' : 'translate-x-full'}`}>
             <MapSidebar
               expanded={true}
@@ -274,14 +282,16 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Mobile map toggle label — always visible */}
-        <button
-          onClick={() => setMobileMapOpen((v) => !v)}
-          className={`fixed right-0 top-1/2 -translate-y-1/2 z-[250] md:hidden px-1.5 py-3 rounded-l-lg shadow-lg flex flex-col items-center gap-1 text-[10px] font-bold ${mobileMapOpen ? 'bg-destructive text-destructive-foreground' : 'bg-primary text-primary-foreground'}`}
-          style={{ writingMode: 'vertical-rl' }}
-        >
-          {mobileMapOpen ? '✕ Chiudi' : '🗺️ Mappa'}
-        </button>
+        {/* Mobile map open label — only when closed */}
+        {!mobileMapOpen && (
+          <button
+            onClick={() => setMobileMapOpen(true)}
+            className="fixed right-0 top-1/2 -translate-y-1/2 z-[150] md:hidden bg-primary text-primary-foreground px-1.5 py-3 rounded-l-lg shadow-lg text-[10px] font-bold"
+            style={{ writingMode: 'vertical-rl' }}
+          >
+            🗺️ Mappa
+          </button>
+        )}
       </div>
     </div>
   );
