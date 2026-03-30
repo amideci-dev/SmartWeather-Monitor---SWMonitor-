@@ -13,7 +13,9 @@ export const mockStations: WeatherStation[] = [
     urls: {
       weather: 'https://www.primierometeo.it/colverde/tabella.php',
       wind: 'https://www.primierometeo.it/colverde/9meteo_vento_.php',
+      rain: 'https://www.primierometeo.it/colverde/wx4.html',
     },
+    hasWinterRainDisclaimer: true,
     weather: {
       condition: 'Poco nuvoloso',
       conditionIcon: '⛅',
@@ -65,7 +67,9 @@ export const mockStations: WeatherStation[] = [
     urls: {
       weather: 'https://www.primierometeo.it/puntaces/tabella.php',
       wind: 'https://www.primierometeo.it/puntaces/9meteo_vento_.php',
+      rain: 'https://www.primierometeo.it/puntaces/wx4.html',
     },
+    hasWinterRainDisclaimer: true,
     weather: {
       condition: 'Poco nuvoloso',
       conditionIcon: '⛅',
@@ -117,7 +121,9 @@ export const mockStations: WeatherStation[] = [
     urls: {
       weather: 'https://www.primierometeo.it/colbricon/tabella.php',
       wind: 'https://www.primierometeo.it/colbricon/9meteo_vento_.php',
+      rain: 'https://www.primierometeo.it/colbricon/wx4.html',
     },
+    hasWinterRainDisclaimer: true,
     weather: {
       condition: 'Sereno',
       conditionIcon: '☀️',
@@ -169,7 +175,9 @@ export const mockStations: WeatherStation[] = [
     urls: {
       weather: 'https://www.primierometeo.it/passorolle/tabella.php',
       wind: 'https://www.primierometeo.it/passorolle/9meteo_vento_.php',
+      rain: 'https://www.primierometeo.it/passorolle/wx4.html',
     },
+    hasWinterRainDisclaimer: true,
     weather: {
       condition: 'Sereno',
       conditionIcon: '☀️',
@@ -221,7 +229,9 @@ export const mockStations: WeatherStation[] = [
     urls: {
       weather: 'https://www.primierometeo.it/funivia/tabella.php',
       wind: 'https://www.primierometeo.it/funivia/9meteo_vento_.php',
+      rain: 'https://www.primierometeo.it/funivia/wx4.html',
     },
+    hasWinterRainDisclaimer: true,
     weather: {
       condition: 'Poco nuvoloso',
       conditionIcon: '⛅',
@@ -324,7 +334,9 @@ export const mockStations: WeatherStation[] = [
     urls: {
       weather: 'https://www.primierometeo.it/paradiso/tabella.php',
       wind: 'https://www.primierometeo.it/paradiso/9meteo_vento.php',
+      rain: 'https://www.primierometeo.it/paradiso/wx4.html',
     },
+    hasWinterRainDisclaimer: true,
     weather: {
       condition: 'Sereno',
       conditionIcon: '☀️',

@@ -8,6 +8,7 @@ const hasWindData = (wind: WindData): boolean =>
   wind.averages.min10 > 0 || wind.averages.min60 > 0;
 import { Button } from '@/components/ui/button';
 import { WeatherCard } from '@/components/dashboard/WeatherCard';
+import { RainCard } from '@/components/dashboard/RainCard';
 import { WindCard } from '@/components/dashboard/WindCard';
 import { StationHeader } from '@/components/dashboard/StationHeader';
 import { HydrometerCard } from '@/components/dashboard/HydrometerCard';
@@ -134,6 +135,11 @@ const Index = () => {
                 <div className={`mt-4 grid gap-6 ${hasWindData(station.wind) ? 'lg:grid-cols-2' : 'lg:grid-cols-1 max-w-2xl'}`}>
                   <WeatherCard data={station.weather} />
                   {hasWindData(station.wind) && <WindCard data={station.wind} />}
+                  <RainCard
+                    data={station.weather}
+                    rainUrl={station.urls.rain}
+                    hasWinterDisclaimer={station.hasWinterRainDisclaimer}
+                  />
                 </div>
               </section>
             )}
