@@ -193,7 +193,7 @@ const Index = () => {
                 {/* Station selector */}
                 <Tabs value={activeStation!} onValueChange={setActiveStation}>
                   <TabsList className="w-full flex-wrap justify-start gap-1 bg-transparent p-0 h-auto">
-                    {mockStations.map((s) => (
+                    {stations.map((s) => (
                       <TabsTrigger
                         key={s.id}
                         value={s.id}
