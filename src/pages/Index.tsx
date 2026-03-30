@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { WeatherCard } from '@/components/dashboard/WeatherCard';
 import { RainCard } from '@/components/dashboard/RainCard';
 import { WindCard } from '@/components/dashboard/WindCard';
+import { SnowCard } from '@/components/dashboard/SnowCard';
 import { StationHeader } from '@/components/dashboard/StationHeader';
 import { HydrometerCard } from '@/components/dashboard/HydrometerCard';
 import { MapSidebar } from '@/components/dashboard/MapSidebar';
