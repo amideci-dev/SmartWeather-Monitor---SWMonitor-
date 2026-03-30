@@ -119,6 +119,25 @@ export function MapSidebar({ expanded, onToggleExpand, onSelectStation }: MapSid
       L.marker([hydro.lat, hydro.lng], { icon }).addTo(map).bindPopup(popup);
     });
 
+    // Standalone webcam markers
+    standaloneWebcams.forEach((cam) => {
+      const icon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div class="webcam-pin"><span class="text-sm">📷</span></div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+      });
+
+      const popup = L.popup({ className: 'station-popup', maxWidth: 220 }).setContent(`
+        <div class="p-2 space-y-1.5">
+          <div class="font-bold text-sm">📷 ${cam.name}</div>
+          <a href="${cam.url}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-600 hover:underline">Apri webcam →</a>
+        </div>
+      `);
+
+      L.marker([cam.lat, cam.lng], { icon }).addTo(map).bindPopup(popup);
+    });
+
     mapRef.current = map;
 
     return () => {
