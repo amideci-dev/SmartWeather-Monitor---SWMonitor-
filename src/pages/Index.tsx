@@ -262,6 +262,14 @@ const Index = () => {
             className="absolute inset-0 bg-black/40"
             onClick={() => setMobileMapOpen(false)}
           />
+          {/* Close label on left edge of map panel */}
+          <button
+            onClick={() => setMobileMapOpen(false)}
+            className={`absolute left-[15%] top-1/2 -translate-y-1/2 -translate-x-full z-[260] bg-destructive text-destructive-foreground px-1.5 py-3 rounded-l-lg shadow-lg text-[10px] font-bold transition-transform duration-300 ${mobileMapOpen ? 'translate-x-0' : 'translate-x-full'}`}
+            style={{ writingMode: 'vertical-rl', left: 'calc(100% - 85%)' }}
+          >
+            ✕ Chiudi
+          </button>
           <div className={`relative ml-auto w-[85%] max-w-md h-full transition-transform duration-300 ${mobileMapOpen ? 'translate-x-0' : 'translate-x-full'}`}>
             <MapSidebar
               expanded={true}
@@ -274,13 +282,16 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Mobile map toggle label — always visible */}
-        <button
-          onClick={() => setMobileMapOpen((v) => !v)}
-          className={`fixed right-0 top-1/2 -translate-y-1/2 z-[250] md:hidden px-1.5 py-3 rounded-l-lg shadow-lg flex flex-col items-center gap-1 text-[10px] font-bold ${mobileMapOpen ? 'bg-destructive text-destructive-foreground' : 'bg-primary text-primary-foreground'}`}
-          style={{ writingMode: 'vertical-rl' }}
-        >
-          {mobileMapOpen ? '✕ Chiudi' : '🗺️ Mappa'}
+        {/* Mobile map open label — only when closed */}
+        {!mobileMapOpen && (
+          <button
+            onClick={() => setMobileMapOpen(true)}
+            className="fixed right-0 top-1/2 -translate-y-1/2 z-[150] md:hidden bg-primary text-primary-foreground px-1.5 py-3 rounded-l-lg shadow-lg text-[10px] font-bold"
+            style={{ writingMode: 'vertical-rl' }}
+          >
+            🗺️ Mappa
+          </button>
+        )
         </button>
       </div>
     </div>
