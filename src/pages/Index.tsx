@@ -36,7 +36,7 @@ const Index = () => {
       <AlertBanner alerts={allAlerts} />
 
       {/* Top bar */}
-      <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
+      <header className="sticky top-0 z-[120] border-b bg-card/80 backdrop-blur-md">
         <div className="flex h-14 items-center gap-3 px-4">
           <Flame className="h-6 w-6 text-accent" />
           <h1 className="text-lg font-extrabold tracking-tight">
@@ -55,7 +55,7 @@ const Index = () => {
       </header>
 
       {/* Main layout: data (left) + map (right) */}
-      <div className="flex flex-1 min-h-0">
+      <div className="relative isolate flex flex-1 min-h-0">
         {/* Data panel */}
         <main
           className="flex-1 overflow-y-auto transition-all duration-300"
@@ -149,7 +149,7 @@ const Index = () => {
 
         {/* Map sidebar */}
         <aside
-          className="hidden md:block transition-all duration-300"
+          className="relative z-0 hidden md:block transition-all duration-300"
           style={{ width: mapExpanded ? '60%' : '25%', minWidth: mapExpanded ? '400px' : '280px', flexShrink: 0 }}
         >
           <MapSidebar
