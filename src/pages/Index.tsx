@@ -291,8 +291,7 @@ const Index = () => {
           >
             🗺️ Mappa
           </button>
-        )
-        </button>
+        )}
       </div>
     </div>
   );
