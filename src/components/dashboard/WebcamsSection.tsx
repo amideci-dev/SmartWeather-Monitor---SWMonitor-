@@ -38,6 +38,17 @@ export function WebcamsSection({ onSelectStation }: WebcamsSectionProps) {
         </span>
       </button>
 
+      {!expanded && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full text-xs"
+          onClick={() => setExpanded(true)}
+        >
+          Espandi webcam
+        </Button>
+      )}
+
       {expanded && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {allWebcams.map((cam) => (
