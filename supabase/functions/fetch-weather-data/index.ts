@@ -95,43 +95,24 @@ function speedToBeaufort(kmh: number): { scale: number; desc: string } {
   return { scale: t.scale, desc: t.desc };
 }
 
-async function fetchWithRetry(url: string, retries = 2): Promise<string> {
-  // Try direct first, then fallback to allorigins proxy if blocked
-  const attempts = [
-    url,
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  ];
-  
-  for (const attemptUrl of attempts) {
-    for (let i = 0; i <= retries; i++) {
-      try {
-        const res = await fetch(attemptUrl, {
-          signal: AbortSignal.timeout(15000),
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/xml, application/xml, */*',
-          },
-        });
-        if (res.ok) {
-          const text = await res.text();
-          if (text.includes('<datiOggi') || text.includes('<temperatura>')) {
-            return text;
-          }
-          throw new Error('Invalid XML response');
-        }
-        const body = await res.text();
-        throw new Error(`HTTP ${res.status}`);
-      } catch (err) {
-        if (i === retries) {
-          // If direct failed, try proxy
-          if (attemptUrl === url) break;
-          throw err;
-        }
-        await new Promise(r => setTimeout(r, 500 * (i + 1)));
-      }
-    }
+async function fetchWithRetry(url: string): Promise<string> {
+  // Skip direct attempt (blocked by MeteoTrentino), go straight to proxy
+  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+  const res = await fetch(proxyUrl, {
+    signal: AbortSignal.timeout(10000),
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    },
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Proxy HTTP ${res.status}: ${body.slice(0, 100)}`);
   }
-  throw new Error(`All fetch attempts failed for ${url}`);
+  const text = await res.text();
+  if (!text.includes('<datiOggi') && !text.includes('<temperatura>')) {
+    throw new Error('Invalid XML response from proxy');
+  }
+  return text;
 }
 
 async function fetchXmlStation(config: typeof XML_STATIONS[0]) {
