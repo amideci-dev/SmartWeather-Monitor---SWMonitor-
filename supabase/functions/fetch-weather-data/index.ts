@@ -98,7 +98,10 @@ function speedToBeaufort(kmh: number): { scale: number; desc: string } {
 async function fetchXmlStation(config: typeof XML_STATIONS[0]) {
   try {
     const url = `https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=${config.code}`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(10000),
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WeatherDashboard/1.0)' },
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const xml = await res.text();
 
