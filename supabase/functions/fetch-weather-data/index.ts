@@ -95,28 +95,43 @@ function speedToBeaufort(kmh: number): { scale: number; desc: string } {
   return { scale: t.scale, desc: t.desc };
 }
 
-async function fetchWithRetry(url: string, retries = 2): Promise<Response> {
-  const headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Accept': 'text/xml, application/xml, */*',
-    'Accept-Language': 'it-IT,it;q=0.9,en;q=0.8',
-  };
-  for (let i = 0; i <= retries; i++) {
-    try {
-      const res = await fetch(url, {
-        signal: AbortSignal.timeout(15000),
-        headers,
-      });
-      if (res.ok) return res;
-      const body = await res.text();
-      throw new Error(`HTTP ${res.status}: ${body.slice(0, 100)}`);
-    } catch (err) {
-      if (i === retries) throw err;
-      // Wait before retrying
-      await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+async function fetchWithRetry(url: string, retries = 2): Promise<string> {
+  // Try direct first, then fallback to allorigins proxy if blocked
+  const attempts = [
+    url,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  ];
+  
+  for (const attemptUrl of attempts) {
+    for (let i = 0; i <= retries; i++) {
+      try {
+        const res = await fetch(attemptUrl, {
+          signal: AbortSignal.timeout(15000),
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/xml, application/xml, */*',
+          },
+        });
+        if (res.ok) {
+          const text = await res.text();
+          if (text.includes('<datiOggi') || text.includes('<temperatura>')) {
+            return text;
+          }
+          throw new Error('Invalid XML response');
+        }
+        const body = await res.text();
+        throw new Error(`HTTP ${res.status}`);
+      } catch (err) {
+        if (i === retries) {
+          // If direct failed, try proxy
+          if (attemptUrl === url) break;
+          throw err;
+        }
+        await new Promise(r => setTimeout(r, 500 * (i + 1)));
+      }
     }
   }
-  throw new Error('Unreachable');
+  throw new Error(`All fetch attempts failed for ${url}`);
 }
 
 async function fetchXmlStation(config: typeof XML_STATIONS[0]) {
