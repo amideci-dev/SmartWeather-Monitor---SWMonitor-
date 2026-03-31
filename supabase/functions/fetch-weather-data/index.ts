@@ -500,8 +500,12 @@ Deno.serve(async (req) => {
 
   try {
     // Fetch all sources in parallel
-    const [xmlResults, htmlResults, wuResult, hydroResults] = await Promise.all([
-      Promise.all(XML_STATIONS.map(fetchXmlStation)),
+    // Fetch XML stations sequentially to avoid connection resets
+    const xmlResults = [];
+    for (const station of XML_STATIONS) {
+      xmlResults.push(await fetchXmlStation(station));
+    }
+    const [htmlResults, wuResult, hydroResults] = await Promise.all([
       Promise.all(HTML_STATIONS.map(fetchHtmlStation)),
       fetchWunderground(),
       Promise.all(HYDROMETERS.map(fetchHydrometer)),
