@@ -95,12 +95,26 @@ function speedToBeaufort(kmh: number): { scale: number; desc: string } {
   return { scale: t.scale, desc: t.desc };
 }
 
+async function fetchXmlViaProxy(url: string): Promise<string> {
+  // Try direct fetch first with short timeout
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(5000),
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WeatherDashboard/1.0)' },
+    });
+    if (res.ok) {
+      const text = await res.text();
+      if (text.includes('<datiOggi') || text.includes('<temperatura>')) return text;
+    } else { await res.text(); }
+  } catch { /* blocked, fall through */ }
+  
+  throw new Error('MeteoTrentino XML blocked from cloud runtime');
+}
+
 async function fetchXmlStation(config: typeof XML_STATIONS[0]) {
   try {
     const url = `https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=${config.code}`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const xml = await res.text();
+    const xml = await fetchXmlViaProxy(url);
 
     // Extract summary
     const tmin = parseFloat(xml.match(/<tmin>([^<]+)/)?.[1] ?? '0');
@@ -477,8 +491,12 @@ Deno.serve(async (req) => {
 
   try {
     // Fetch all sources in parallel
-    const [xmlResults, htmlResults, wuResult, hydroResults] = await Promise.all([
-      Promise.all(XML_STATIONS.map(fetchXmlStation)),
+    // Fetch XML stations sequentially to avoid connection resets
+    const xmlResults = [];
+    for (const station of XML_STATIONS) {
+      xmlResults.push(await fetchXmlStation(station));
+    }
+    const [htmlResults, wuResult, hydroResults] = await Promise.all([
       Promise.all(HTML_STATIONS.map(fetchHtmlStation)),
       fetchWunderground(),
       Promise.all(HYDROMETERS.map(fetchHydrometer)),
