@@ -95,24 +95,60 @@ function speedToBeaufort(kmh: number): { scale: number; desc: string } {
   return { scale: t.scale, desc: t.desc };
 }
 
-async function fetchWithRetry(url: string): Promise<string> {
-  // Skip direct attempt (blocked by MeteoTrentino), go straight to proxy
-  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-  const res = await fetch(proxyUrl, {
-    signal: AbortSignal.timeout(10000),
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-    },
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Proxy HTTP ${res.status}: ${body.slice(0, 100)}`);
+async function fetchXmlViaProxy(url: string): Promise<string> {
+  // MeteoTrentino blocks AWS/cloud IPs, use multiple proxy strategies
+  const proxies = [
+    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  ];
+  
+  let lastError: Error | null = null;
+  for (const proxyUrl of proxies) {
+    try {
+      const res = await fetch(proxyUrl, {
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!res.ok) {
+        await res.text(); // consume body
+        continue;
+      }
+      let text = await res.text();
+      
+      // allorigins /get returns JSON with contents field
+      if (proxyUrl.includes('allorigins.win/get')) {
+        try {
+          const json = JSON.parse(text);
+          text = json.contents || '';
+        } catch {
+          continue;
+        }
+      }
+      
+      if (text.includes('<datiOggi') || text.includes('<temperatura>')) {
+        return text;
+      }
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+    }
   }
-  const text = await res.text();
-  if (!text.includes('<datiOggi') && !text.includes('<temperatura>')) {
-    throw new Error('Invalid XML response from proxy');
-  }
-  return text;
+  
+  // Last resort: try direct (in case MeteoTrentino unblocks)
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(5000),
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WeatherDashboard/1.0)' },
+    });
+    if (res.ok) {
+      const text = await res.text();
+      if (text.includes('<datiOggi') || text.includes('<temperatura>')) {
+        return text;
+      }
+    } else {
+      await res.text();
+    }
+  } catch {}
+  
+  throw lastError || new Error(`Failed to fetch XML from ${url}`);
 }
 
 async function fetchXmlStation(config: typeof XML_STATIONS[0]) {
