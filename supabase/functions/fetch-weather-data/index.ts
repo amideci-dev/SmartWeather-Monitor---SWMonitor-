@@ -96,43 +96,7 @@ function speedToBeaufort(kmh: number): { scale: number; desc: string } {
 }
 
 async function fetchXmlViaProxy(url: string): Promise<string> {
-  // MeteoTrentino blocks AWS/cloud IPs, use multiple proxy strategies
-  const proxies = [
-    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-    `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  ];
-  
-  let lastError: Error | null = null;
-  for (const proxyUrl of proxies) {
-    try {
-      const res = await fetch(proxyUrl, {
-        signal: AbortSignal.timeout(8000),
-      });
-      if (!res.ok) {
-        await res.text(); // consume body
-        continue;
-      }
-      let text = await res.text();
-      
-      // allorigins /get returns JSON with contents field
-      if (proxyUrl.includes('allorigins.win/get')) {
-        try {
-          const json = JSON.parse(text);
-          text = json.contents || '';
-        } catch {
-          continue;
-        }
-      }
-      
-      if (text.includes('<datiOggi') || text.includes('<temperatura>')) {
-        return text;
-      }
-    } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
-    }
-  }
-  
-  // Last resort: try direct (in case MeteoTrentino unblocks)
+  // Try direct fetch first with short timeout
   try {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(5000),
@@ -140,15 +104,11 @@ async function fetchXmlViaProxy(url: string): Promise<string> {
     });
     if (res.ok) {
       const text = await res.text();
-      if (text.includes('<datiOggi') || text.includes('<temperatura>')) {
-        return text;
-      }
-    } else {
-      await res.text();
-    }
-  } catch {}
+      if (text.includes('<datiOggi') || text.includes('<temperatura>')) return text;
+    } else { await res.text(); }
+  } catch { /* blocked, fall through */ }
   
-  throw lastError || new Error(`Failed to fetch XML from ${url}`);
+  throw new Error('MeteoTrentino XML blocked from cloud runtime');
 }
 
 async function fetchXmlStation(config: typeof XML_STATIONS[0]) {
