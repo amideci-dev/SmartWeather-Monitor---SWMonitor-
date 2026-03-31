@@ -154,7 +154,7 @@ async function fetchXmlViaProxy(url: string): Promise<string> {
 async function fetchXmlStation(config: typeof XML_STATIONS[0]) {
   try {
     const url = `https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice=${config.code}`;
-    const xml = await fetchWithRetry(url);
+    const xml = await fetchXmlViaProxy(url);
 
     // Extract summary
     const tmin = parseFloat(xml.match(/<tmin>([^<]+)/)?.[1] ?? '0');
