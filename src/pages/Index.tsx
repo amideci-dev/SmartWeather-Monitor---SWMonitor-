@@ -270,12 +270,12 @@ const Index = () => {
                 <Waves className="h-5 w-5 text-info" />
                 <h2 className="text-lg font-bold">Idrometri</h2>
                 <span className="ml-1 rounded-full bg-info/10 px-2 py-0.5 text-xs font-medium text-info">
-                  {mockHydrometers.length}
+                  {hydrometers.length}
                 </span>
               </div>
 
               <div className="grid gap-6 lg:grid-cols-2">
-                {mockHydrometers.map((h) => (
+                {hydrometers.map((h) => (
                   <HydrometerCard key={h.id} data={h} />
                 ))}
               </div>
