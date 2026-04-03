@@ -470,13 +470,51 @@ async function fetchWunderground() {
 async function fetchHydrometer(config: typeof HYDROMETERS[0]) {
   try {
     const res = await fetch(
-      `https://www.floods.it/public/Charts.php?Sensori[]=${config.sensorId}`,
+      `https://www.floods.it/api/v1/monitoring/${config.sensorId}.json`,
       { signal: AbortSignal.timeout(10000) }
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    // floods.it returns HTML with embedded chart data — for now return unreachable
-    // TODO: parse the chart data or find API endpoint
-    return { id: config.id, unreachable: true, error: 'Parser not yet implemented' };
+    const json = await res.json();
+
+    const feature = json?.features?.[0];
+    const data = feature?.properties?.data;
+    if (!data?.timestamp?.length || !data?.value?.length) {
+      throw new Error('No data in response');
+    }
+
+    const timestamps: number[] = data.timestamp;
+    const values: number[] = data.value;
+    const tz = (feature?.properties?.metadata?.tz ?? 'UTC') === 'UTC' ? 0 : 3600;
+    const tzOffsetSec = feature?.properties?.s?.tz ? feature.properties.s.tz * 60 : 3600; // default CET
+
+    // Get last 24h of readings (96 readings at 15-min intervals)
+    const count = Math.min(96, timestamps.length);
+    const startIdx = timestamps.length - count;
+    const history: { time: string; level: number; flow: number | null }[] = [];
+
+    for (let i = startIdx; i < timestamps.length; i++) {
+      const d = new Date((timestamps[i] + tzOffsetSec) * 1000);
+      const time = `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}`;
+      history.push({ time, level: values[i], flow: null });
+    }
+
+    const lastTs = timestamps[timestamps.length - 1];
+    const lastDate = new Date((lastTs + tzOffsetSec) * 1000);
+    const lastUpdate = `${lastDate.getUTCDate().toString().padStart(2, '0')}/${(lastDate.getUTCMonth() + 1).toString().padStart(2, '0')}/${lastDate.getUTCFullYear()} ore ${lastDate.getUTCHours().toString().padStart(2, '0')}:${lastDate.getUTCMinutes().toString().padStart(2, '0')}`;
+
+    const currentLevel = values[values.length - 1];
+
+    // Extract site name from series config
+    const siteName = json?.features?.[0]?.properties?.metadata?.api_warnings || '';
+
+    return {
+      id: config.id,
+      unreachable: false,
+      lastUpdate,
+      currentLevel,
+      currentFlow: null,
+      history,
+    };
   } catch (e) {
     console.error(`Error fetching hydrometer ${config.id}:`, e);
     return { id: config.id, unreachable: true, error: String(e) };
