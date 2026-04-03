@@ -49,8 +49,13 @@ const Index = () => {
     [liveData]
   );
 
+  const hydrometers = useMemo(
+    () => mergeHydrometersWithLiveData(liveData?.hydrometers),
+    [liveData]
+  );
+
   const windAlerts = useMemo(() => generateWindAlerts(stations), [stations]);
-  const hydroAlerts = useMemo(() => generateHydroAlerts(mockHydrometers), []);
+  const hydroAlerts = useMemo(() => generateHydroAlerts(hydrometers), [hydrometers]);
   const allAlerts: StationAlert[] = useMemo(() => [...windAlerts, ...hydroAlerts], [windAlerts, hydroAlerts]);
 
   const station = activeStation
