@@ -30,7 +30,7 @@ import { mockAlert } from '@/data/mockAlert';
 import { stationWebcams } from '@/data/mockWebcams';
 import { generateWindAlerts, generateHydroAlerts, StationAlert } from '@/lib/windAlerts';
 import { useLiveWeatherData } from '@/hooks/useLiveWeatherData';
-import { mergeStationsWithLiveData } from '@/lib/mergeData';
+import { mergeStationsWithLiveData, mergeHydrometersWithLiveData } from '@/lib/mergeData';
 
 const Index = () => {
   const queryClient = useQueryClient();
