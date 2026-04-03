@@ -34,6 +34,7 @@ import { useLiveWeatherData } from '@/hooks/useLiveWeatherData';
 import { mergeStationsWithLiveData } from '@/lib/mergeData';
 
 const Index = () => {
+  const queryClient = useQueryClient();
   const [activeStation, setActiveStation] = useState<string | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
   const [mobileMapOpen, setMobileMapOpen] = useState(false);
