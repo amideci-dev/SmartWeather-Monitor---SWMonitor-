@@ -103,7 +103,7 @@ const Index = () => {
             <AlertBadge alert={mockAlert} />
             <AlertsBell alerts={allAlerts} onSelectStation={handleSelectStation} />
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => queryClient.invalidateQueries({ queryKey: ['live-weather-data'] })}
               className="p-1.5 rounded-lg hover:bg-muted transition-colors"
               title="Aggiorna dati"
             >
