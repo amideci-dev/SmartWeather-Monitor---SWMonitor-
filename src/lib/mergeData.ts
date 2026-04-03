@@ -74,9 +74,31 @@ export function mergeStationsWithLiveData(
   });
 }
 
+interface LiveHydrometerData {
+  id: string;
+  unreachable: boolean;
+  lastUpdate?: string;
+  currentLevel?: number;
+  currentFlow?: number | null;
+  history?: { time: string; level: number; flow: number | null }[];
+  error?: string;
+}
+
 export function mergeHydrometersWithLiveData(
-  liveHydrometers: LiveStationData[] | undefined
+  liveHydrometers: LiveHydrometerData[] | undefined
 ): Hydrometer[] {
-  // For now, hydrometers stay with mock data until floods.it parser is ready
-  return mockHydrometers;
+  if (!liveHydrometers || liveHydrometers.length === 0) return mockHydrometers;
+
+  return mockHydrometers.map((mock) => {
+    const live = liveHydrometers.find((l) => l.id === mock.id);
+    if (!live || live.unreachable || !live.history?.length) return mock;
+
+    return {
+      ...mock,
+      lastUpdate: live.lastUpdate || mock.lastUpdate,
+      currentLevel: live.currentLevel ?? mock.currentLevel,
+      currentFlow: live.currentFlow ?? mock.currentFlow,
+      history: live.history,
+    };
+  });
 }

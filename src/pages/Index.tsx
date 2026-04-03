@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Flame, Radio, Waves, Mountain, LayoutGrid, Snowflake, Camera, RefreshCw, Menu, X } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
@@ -24,15 +25,15 @@ import { AlertBanner } from '@/components/dashboard/WindAlertBanner';
 import { StationsSummary } from '@/components/dashboard/StationsSummary';
 import { WebcamsSection } from '@/components/dashboard/WebcamsSection';
 import { WebcamCard } from '@/components/dashboard/WebcamCard';
-import { mockHydrometers } from '@/data/mockStations';
 import { mockSnowStations } from '@/data/mockSnow';
 import { mockAlert } from '@/data/mockAlert';
 import { stationWebcams } from '@/data/mockWebcams';
 import { generateWindAlerts, generateHydroAlerts, StationAlert } from '@/lib/windAlerts';
 import { useLiveWeatherData } from '@/hooks/useLiveWeatherData';
-import { mergeStationsWithLiveData } from '@/lib/mergeData';
+import { mergeStationsWithLiveData, mergeHydrometersWithLiveData } from '@/lib/mergeData';
 
 const Index = () => {
+  const queryClient = useQueryClient();
   const [activeStation, setActiveStation] = useState<string | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
   const [mobileMapOpen, setMobileMapOpen] = useState(false);
@@ -48,8 +49,13 @@ const Index = () => {
     [liveData]
   );
 
+  const hydrometers = useMemo(
+    () => mergeHydrometersWithLiveData(liveData?.hydrometers),
+    [liveData]
+  );
+
   const windAlerts = useMemo(() => generateWindAlerts(stations), [stations]);
-  const hydroAlerts = useMemo(() => generateHydroAlerts(mockHydrometers), []);
+  const hydroAlerts = useMemo(() => generateHydroAlerts(hydrometers), [hydrometers]);
   const allAlerts: StationAlert[] = useMemo(() => [...windAlerts, ...hydroAlerts], [windAlerts, hydroAlerts]);
 
   const station = activeStation
@@ -84,8 +90,11 @@ const Index = () => {
               <button
                 key={item.id}
                 onClick={() => {
-                  const el = document.getElementById(item.id);
-                  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  setActiveStation(null);
+                  setTimeout(() => {
+                    const el = document.getElementById(item.id);
+                    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 50);
                 }}
                 className="px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
@@ -98,7 +107,7 @@ const Index = () => {
             <AlertBadge alert={mockAlert} />
             <AlertsBell alerts={allAlerts} onSelectStation={handleSelectStation} />
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => queryClient.invalidateQueries({ queryKey: ['live-weather-data'] })}
               className="p-1.5 rounded-lg hover:bg-muted transition-colors"
               title="Aggiorna dati"
             >
@@ -131,8 +140,11 @@ const Index = () => {
                 key={item.id}
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  const el = document.getElementById(item.id);
-                  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  setActiveStation(null);
+                  setTimeout(() => {
+                    const el = document.getElementById(item.id);
+                    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 50);
                 }}
                 className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-left"
               >
@@ -258,12 +270,12 @@ const Index = () => {
                 <Waves className="h-5 w-5 text-info" />
                 <h2 className="text-lg font-bold">Idrometri</h2>
                 <span className="ml-1 rounded-full bg-info/10 px-2 py-0.5 text-xs font-medium text-info">
-                  {mockHydrometers.length}
+                  {hydrometers.length}
                 </span>
               </div>
 
               <div className="grid gap-6 lg:grid-cols-2">
-                {mockHydrometers.map((h) => (
+                {hydrometers.map((h) => (
                   <HydrometerCard key={h.id} data={h} />
                 ))}
               </div>
