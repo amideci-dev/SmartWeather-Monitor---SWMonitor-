@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Flame, Radio, Waves, Mountain, LayoutGrid, Snowflake, Camera, RefreshCw, Menu, X } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 

@@ -29,10 +29,31 @@ interface AlertBadgeProps {
   alert: AlertType;
 }
 
+/** Parse "DD/MM" into a Date object using current year */
+function parseDDMM(ddmm: string): Date | null {
+  const match = ddmm.match(/(\d{1,2})\/(\d{1,2})/);
+  if (!match) return null;
+  const day = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10) - 1;
+  return new Date(new Date().getFullYear(), month, day);
+}
+
+function isAlertActiveToday(alert: AlertType): boolean {
+  if (!alert.level) return false;
+  const from = parseDDMM(alert.dateFrom);
+  const to = parseDDMM(alert.dateTo);
+  if (!from || !to) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  from.setHours(0, 0, 0, 0);
+  to.setHours(23, 59, 59, 999);
+  return today >= from && today <= to;
+}
+
 export function AlertBadge({ alert }: AlertBadgeProps) {
   const [open, setOpen] = useState(false);
 
-  if (!alert.level) {
+  if (!alert.level || !isAlertActiveToday(alert)) {
     return (
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <ShieldCheck className="h-3.5 w-3.5" />

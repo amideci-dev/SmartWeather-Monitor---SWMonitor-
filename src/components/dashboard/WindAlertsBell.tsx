@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Bell, Wind, Droplets, AlertTriangle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -30,9 +30,49 @@ interface AlertsBellProps {
   onSelectStation?: (id: string) => void;
 }
 
+/** Check if an alert time is older than N hours */
+function isOlderThanHours(timeStr: string, hours: number): boolean {
+  if (!timeStr || timeStr === '—') return true;
+  // Try parsing "DD/MM/YYYY ore HH:MM" format
+  const fullMatch = timeStr.match(/(\d{2})\/(\d{2})\/(\d{4})\s+ore\s+(\d{1,2}):(\d{2})/);
+  if (fullMatch) {
+    const d = new Date(
+      parseInt(fullMatch[3]),
+      parseInt(fullMatch[2]) - 1,
+      parseInt(fullMatch[1]),
+      parseInt(fullMatch[4]),
+      parseInt(fullMatch[5])
+    );
+    return (Date.now() - d.getTime()) > hours * 3600000;
+  }
+  // Try HH:MM only — assume today
+  const hhmmMatch = timeStr.match(/(\d{1,2}):(\d{2})/);
+  if (hhmmMatch) {
+    const now = new Date();
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hhmmMatch[1]), parseInt(hhmmMatch[2]));
+    return (Date.now() - d.getTime()) > hours * 3600000;
+  }
+  return true;
+}
+
+function formatAlertDate(timeStr: string): string {
+  if (!timeStr || timeStr === '—') return '';
+  const fullMatch = timeStr.match(/(\d{2})\/(\d{2})\/(\d{4})\s+ore\s+(\d{1,2}):(\d{2})/);
+  if (fullMatch) return `${fullMatch[1]}/${fullMatch[2]} ore ${fullMatch[4]}:${fullMatch[5]}`;
+  return timeStr;
+}
+
 export function AlertsBell({ alerts, onSelectStation }: AlertsBellProps) {
   const [open, setOpen] = useState(false);
   const [seen, setSeen] = useState(false);
+
+  // Alerts older than 12h are auto-seen
+  const hasNewAlerts = useMemo(() => {
+    return alerts.some(a => {
+      const time = a.kind === 'wind' ? a.time : a.time;
+      return !isOlderThanHours(time, 12);
+    });
+  }, [alerts]);
 
   const handleOpen = (isOpen: boolean) => {
     setOpen(isOpen);
@@ -49,13 +89,14 @@ export function AlertsBell({ alerts, onSelectStation }: AlertsBellProps) {
   });
 
   const dotColor = hasCritical ? 'bg-red-500' : hasHigh ? 'bg-orange-500' : 'bg-yellow-500';
+  const showUnread = alerts.length > 0 && !seen && hasNewAlerts;
 
   return (
     <Popover open={open} onOpenChange={handleOpen}>
       <PopoverTrigger asChild>
         <button className="relative p-1.5 rounded-lg hover:bg-muted transition-colors">
           <Bell className="h-5 w-5 text-muted-foreground" />
-          {alerts.length > 0 && !seen && (
+          {showUnread && (
             <>
               <span className={`absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 rounded-full ${dotColor} text-[10px] font-bold text-white flex items-center justify-center`}>
                 {alerts.length}
@@ -63,7 +104,7 @@ export function AlertsBell({ alerts, onSelectStation }: AlertsBellProps) {
               <span className={`absolute -top-0.5 -right-0.5 h-4 min-w-[16px] rounded-full ${dotColor} animate-ping opacity-40`} />
             </>
           )}
-          {alerts.length > 0 && seen && (
+          {alerts.length > 0 && (seen || !hasNewAlerts) && (
             <span className={`absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full ${dotColor}`} />
           )}
         </button>
@@ -87,6 +128,7 @@ export function AlertsBell({ alerts, onSelectStation }: AlertsBellProps) {
           <ScrollArea className="max-h-80">
             <div className="divide-y">
               {alerts.map((alert) => {
+                const isOld = isOlderThanHours(alert.time, 12);
                 if (alert.kind === 'wind') {
                   const styles = severityStyles[alert.threshold.severity];
                   return (
@@ -103,13 +145,15 @@ export function AlertsBell({ alerts, onSelectStation }: AlertsBellProps) {
                           <Wind className={`h-3.5 w-3.5 ${styles.icon}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className={`text-xs font-bold ${styles.text}`}>
                               {alert.threshold.label}
                             </span>
                             <span className={`h-1.5 w-1.5 rounded-full ${styles.dot}`} />
                             {!alert.isRecent && (
-                              <span className="text-[9px] bg-muted px-1 rounded text-muted-foreground">passato</span>
+                              <span className="text-[9px] bg-muted px-1 rounded text-muted-foreground">
+                                passato — {formatAlertDate(alert.time)}
+                              </span>
                             )}
                           </div>
                           <p className="text-xs text-foreground mt-0.5">
@@ -137,11 +181,16 @@ export function AlertsBell({ alerts, onSelectStation }: AlertsBellProps) {
                           <Droplets className={`h-3.5 w-3.5 ${styles.icon}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className={`text-xs font-bold ${styles.text}`}>
                               Livello in aumento
                             </span>
                             <span className={`h-1.5 w-1.5 rounded-full ${styles.dot}`} />
+                            {isOld && (
+                              <span className="text-[9px] bg-muted px-1 rounded text-muted-foreground">
+                                passato — {formatAlertDate(alert.time)}
+                              </span>
+                            )}
                           </div>
                           <p className="text-xs text-foreground mt-0.5">
                             <span className="font-semibold">{alert.hydrometerName}</span>
