@@ -136,8 +136,11 @@ const Index = () => {
                 key={item.id}
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  const el = document.getElementById(item.id);
-                  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  setActiveStation(null);
+                  setTimeout(() => {
+                    const el = document.getElementById(item.id);
+                    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 50);
                 }}
                 className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-left"
               >
