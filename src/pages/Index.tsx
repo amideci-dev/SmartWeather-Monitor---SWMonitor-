@@ -86,8 +86,11 @@ const Index = () => {
               <button
                 key={item.id}
                 onClick={() => {
-                  const el = document.getElementById(item.id);
-                  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  setActiveStation(null);
+                  setTimeout(() => {
+                    const el = document.getElementById(item.id);
+                    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 50);
                 }}
                 className="px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
