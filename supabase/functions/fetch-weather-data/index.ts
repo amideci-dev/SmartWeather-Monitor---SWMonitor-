@@ -23,6 +23,7 @@ const HTML_STATIONS = [
 
 const HYDROMETERS = [
   { id: 'sanmartino', sensorId: '28240' },
+  { id: 'fieraprimiero', sensorId: '11768' },
 ];
 
 const SNOW_STATIONS = [
