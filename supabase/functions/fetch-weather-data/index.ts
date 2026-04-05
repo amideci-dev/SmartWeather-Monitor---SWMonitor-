@@ -23,7 +23,11 @@ const HTML_STATIONS = [
 
 const HYDROMETERS = [
   { id: 'sanmartino', sensorId: '28240' },
-  // Note: sensor 28190 (Imer/Fiera) does not exist in floods.it API
+];
+
+const SNOW_STATIONS = [
+  { id: 'snow-sanmartino', campoNeveCode: '4SMC' },
+  { id: 'snow-passorolle', campoNeveCode: '31RO' },
 ];
 
 // ─── XML Parser helpers ───
