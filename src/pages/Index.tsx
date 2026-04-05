@@ -291,7 +291,7 @@ const Index = () => {
                 <Snowflake className="h-5 w-5 text-info" />
                 <h2 className="text-lg font-bold">Nivometri e Campi Neve</h2>
                 <span className="ml-1 rounded-full bg-info/10 px-2 py-0.5 text-xs font-medium text-info">
-                  {mockSnowStations.length}
+                  {snowStations.length}
                 </span>
               </div>
 
