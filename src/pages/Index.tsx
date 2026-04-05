@@ -296,7 +296,7 @@ const Index = () => {
               </div>
 
               <div className="grid gap-6 lg:grid-cols-2">
-                {mockSnowStations.map((s) => (
+                {snowStations.map((s) => (
                   <SnowCard key={s.id} data={s} />
                 ))}
               </div>
