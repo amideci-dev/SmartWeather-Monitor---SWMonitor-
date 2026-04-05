@@ -1,5 +1,6 @@
-import { WeatherStation, Hydrometer } from '@/types/weather';
+import { WeatherStation, Hydrometer, SnowStation } from '@/types/weather';
 import { mockStations, mockHydrometers } from '@/data/mockStations';
+import { mockSnowStations } from '@/data/mockSnow';
 
 interface LiveStationData {
   id: string;

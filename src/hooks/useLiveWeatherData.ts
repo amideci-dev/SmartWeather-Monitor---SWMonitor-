@@ -15,6 +15,7 @@ interface LiveWeatherResponse {
   timestamp: string;
   stations: LiveStationData[];
   hydrometers: LiveStationData[];
+  snowStations?: any[];
 }
 
 async function fetchLiveData(): Promise<LiveWeatherResponse> {
