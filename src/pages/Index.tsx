@@ -53,6 +53,11 @@ const Index = () => {
     [liveData]
   );
 
+  const snowStations = useMemo(
+    () => mergeSnowWithLiveData(liveData?.snowStations),
+    [liveData]
+  );
+
   const windAlerts = useMemo(() => generateWindAlerts(stations), [stations]);
   const hydroAlerts = useMemo(() => generateHydroAlerts(hydrometers), [hydrometers]);
   const allAlerts: StationAlert[] = useMemo(() => [...windAlerts, ...hydroAlerts], [windAlerts, hydroAlerts]);
