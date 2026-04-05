@@ -25,12 +25,11 @@ import { AlertBanner } from '@/components/dashboard/WindAlertBanner';
 import { StationsSummary } from '@/components/dashboard/StationsSummary';
 import { WebcamsSection } from '@/components/dashboard/WebcamsSection';
 import { WebcamCard } from '@/components/dashboard/WebcamCard';
-import { mockSnowStations } from '@/data/mockSnow';
 import { mockAlert } from '@/data/mockAlert';
 import { stationWebcams } from '@/data/mockWebcams';
 import { generateWindAlerts, generateHydroAlerts, StationAlert } from '@/lib/windAlerts';
 import { useLiveWeatherData } from '@/hooks/useLiveWeatherData';
-import { mergeStationsWithLiveData, mergeHydrometersWithLiveData } from '@/lib/mergeData';
+import { mergeStationsWithLiveData, mergeHydrometersWithLiveData, mergeSnowWithLiveData } from '@/lib/mergeData';
 
 const Index = () => {
   const queryClient = useQueryClient();
@@ -51,6 +50,11 @@ const Index = () => {
 
   const hydrometers = useMemo(
     () => mergeHydrometersWithLiveData(liveData?.hydrometers),
+    [liveData]
+  );
+
+  const snowStations = useMemo(
+    () => mergeSnowWithLiveData(liveData?.snowStations),
     [liveData]
   );
 
@@ -287,12 +291,12 @@ const Index = () => {
                 <Snowflake className="h-5 w-5 text-info" />
                 <h2 className="text-lg font-bold">Nivometri e Campi Neve</h2>
                 <span className="ml-1 rounded-full bg-info/10 px-2 py-0.5 text-xs font-medium text-info">
-                  {mockSnowStations.length}
+                  {snowStations.length}
                 </span>
               </div>
 
               <div className="grid gap-6 lg:grid-cols-2">
-                {mockSnowStations.map((s) => (
+                {snowStations.map((s) => (
                   <SnowCard key={s.id} data={s} />
                 ))}
               </div>

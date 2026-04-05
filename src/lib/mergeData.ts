@@ -1,5 +1,6 @@
-import { WeatherStation, Hydrometer } from '@/types/weather';
+import { WeatherStation, Hydrometer, SnowStation } from '@/types/weather';
 import { mockStations, mockHydrometers } from '@/data/mockStations';
+import { mockSnowStations } from '@/data/mockSnow';
 
 interface LiveStationData {
   id: string;
@@ -98,6 +99,33 @@ export function mergeHydrometersWithLiveData(
       lastUpdate: live.lastUpdate || mock.lastUpdate,
       currentLevel: live.currentLevel ?? mock.currentLevel,
       currentFlow: live.currentFlow ?? mock.currentFlow,
+      history: live.history,
+    };
+  });
+}
+
+interface LiveSnowData {
+  id: string;
+  unreachable?: boolean;
+  lastUpdate?: string;
+  currentDepth?: number;
+  history?: { date: string; hs: number; hn: number | null }[];
+  error?: string;
+}
+
+export function mergeSnowWithLiveData(
+  liveSnow: LiveSnowData[] | undefined
+): SnowStation[] {
+  if (!liveSnow || liveSnow.length === 0) return mockSnowStations;
+
+  return mockSnowStations.map((mock) => {
+    const live = liveSnow.find((l) => l.id === mock.id);
+    if (!live || live.unreachable || !live.history?.length) return mock;
+
+    return {
+      ...mock,
+      lastUpdate: live.lastUpdate || mock.lastUpdate,
+      currentDepth: live.currentDepth ?? mock.currentDepth,
       history: live.history,
     };
   });

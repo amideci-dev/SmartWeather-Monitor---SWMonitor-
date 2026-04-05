@@ -23,7 +23,11 @@ const HTML_STATIONS = [
 
 const HYDROMETERS = [
   { id: 'sanmartino', sensorId: '28240' },
-  // Note: sensor 28190 (Imer/Fiera) does not exist in floods.it API
+];
+
+const SNOW_STATIONS = [
+  { id: 'snow-sanmartino', campoNeveCode: '4SMC' },
+  { id: 'snow-passorolle', campoNeveCode: '31RO' },
 ];
 
 // ─── XML Parser helpers ───
@@ -521,6 +525,57 @@ async function fetchHydrometer(config: typeof HYDROMETERS[0]) {
   }
 }
 
+// ─── Snow / Campi Neve (MeteoTrentino JSON) ───
+function getCurrentSnowSeason(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  // Season starts in October: Oct 2025 → season "2025"
+  return month >= 10 ? String(year) : String(year - 1);
+}
+
+async function fetchSnowStation(config: typeof SNOW_STATIONS[0]) {
+  try {
+    const season = getCurrentSnowSeason();
+    const url = `https://dati.meteotrentino.it/service.asmx/rilieviNeveStagionaliUnaStazioneValangheJson?stagione=${season}&camponeve=${config.campoNeveCode}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+
+    const obs = json?.osservazioni;
+    if (!Array.isArray(obs) || obs.length === 0) {
+      return { id: config.id, unreachable: false, history: [], currentDepth: 0, lastUpdate: '' };
+    }
+
+    // Get last 30 entries
+    const recent = obs.slice(-30);
+    const history = recent.map((o: any) => {
+      const d = new Date(o.DataRilievo);
+      const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const hs = parseFloat(String(o.HSnum ?? o.HS ?? '').trim()) || 0;
+      const hnRaw = String(o.HNnum ?? o.HN ?? '').trim();
+      const hn = hnRaw === '' || hnRaw === '//' ? null : (parseFloat(hnRaw) || 0);
+      return { date, hs, hn };
+    });
+
+    const last = obs[obs.length - 1];
+    const lastDate = new Date(last.DataRilievo);
+    const lastUpdate = `${lastDate.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
+    const currentDepth = parseFloat(String(last.HSnum ?? last.HS ?? '').trim()) || 0;
+
+    return {
+      id: config.id,
+      unreachable: false,
+      lastUpdate,
+      currentDepth,
+      history,
+    };
+  } catch (e) {
+    console.error(`Error fetching snow station ${config.id}:`, e);
+    return { id: config.id, unreachable: true, error: String(e) };
+  }
+}
+
 // ─── Main handler ───
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -534,14 +589,16 @@ Deno.serve(async (req) => {
     for (const station of XML_STATIONS) {
       xmlResults.push(await fetchXmlStation(station));
     }
-    const [htmlResults, wuResult, hydroResults] = await Promise.all([
+    const [htmlResults, wuResult, hydroResults, snowResults] = await Promise.all([
       Promise.all(HTML_STATIONS.map(fetchHtmlStation)),
       fetchWunderground(),
       Promise.all(HYDROMETERS.map(fetchHydrometer)),
+      Promise.all(SNOW_STATIONS.map(fetchSnowStation)),
     ]);
 
     const stations = [...htmlResults, ...xmlResults, wuResult];
     const hydrometers = hydroResults;
+    const snowStations = snowResults;
 
     return new Response(
       JSON.stringify({
@@ -549,6 +606,7 @@ Deno.serve(async (req) => {
         timestamp: new Date().toISOString(),
         stations,
         hydrometers,
+        snowStations,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
