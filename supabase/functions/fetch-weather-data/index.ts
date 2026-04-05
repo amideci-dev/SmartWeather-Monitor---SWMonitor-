@@ -589,14 +589,16 @@ Deno.serve(async (req) => {
     for (const station of XML_STATIONS) {
       xmlResults.push(await fetchXmlStation(station));
     }
-    const [htmlResults, wuResult, hydroResults] = await Promise.all([
+    const [htmlResults, wuResult, hydroResults, snowResults] = await Promise.all([
       Promise.all(HTML_STATIONS.map(fetchHtmlStation)),
       fetchWunderground(),
       Promise.all(HYDROMETERS.map(fetchHydrometer)),
+      Promise.all(SNOW_STATIONS.map(fetchSnowStation)),
     ]);
 
     const stations = [...htmlResults, ...xmlResults, wuResult];
     const hydrometers = hydroResults;
+    const snowStations = snowResults;
 
     return new Response(
       JSON.stringify({
@@ -604,6 +606,7 @@ Deno.serve(async (req) => {
         timestamp: new Date().toISOString(),
         stations,
         hydrometers,
+        snowStations,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
