@@ -103,3 +103,30 @@ export function mergeHydrometersWithLiveData(
     };
   });
 }
+
+interface LiveSnowData {
+  id: string;
+  unreachable?: boolean;
+  lastUpdate?: string;
+  currentDepth?: number;
+  history?: { date: string; hs: number; hn: number | null }[];
+  error?: string;
+}
+
+export function mergeSnowWithLiveData(
+  liveSnow: LiveSnowData[] | undefined
+): SnowStation[] {
+  if (!liveSnow || liveSnow.length === 0) return mockSnowStations;
+
+  return mockSnowStations.map((mock) => {
+    const live = liveSnow.find((l) => l.id === mock.id);
+    if (!live || live.unreachable || !live.history?.length) return mock;
+
+    return {
+      ...mock,
+      lastUpdate: live.lastUpdate || mock.lastUpdate,
+      currentDepth: live.currentDepth ?? mock.currentDepth,
+      history: live.history,
+    };
+  });
+}
