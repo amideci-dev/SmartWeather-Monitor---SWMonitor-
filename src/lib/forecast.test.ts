@@ -47,6 +47,7 @@ describe('ensemble forecasts', () => {
     expect(stats.tempMin).toBe(1);
     expect(stats.tempMax).toBe(4);
     expect(stats.tempTrend).toBe(3);
+    expect(buildForecastStats(makeForecast(), new Date('2026-11-21T00:30:00Z'))!.hours).toBe(72);
   });
 
   it('writes a location-model narrative from the calculated values', () => {

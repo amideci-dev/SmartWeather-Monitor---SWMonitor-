@@ -19,10 +19,12 @@ import { forecastLocations, forecastModels } from '@/data/forecastLocations';
 import { useEnsembleForecast } from '@/hooks/useEnsembleForecast';
 import { buildDailyForecasts, buildForecastNarrative, buildForecastStats } from '@/lib/forecast';
 import { ForecastLocationId, ForecastModelId } from '@/types/forecast';
+import { SnowStation } from '@/types/weather';
 import { PrecipitationForecastChart, TemperatureSpaghettiChart } from './ForecastCharts';
 import { DailyForecastSection } from './DailyForecastSection';
+import { SnowAccumulationChart } from './SnowAccumulationChart';
 
-export function ForecastDashboard() {
+export function ForecastDashboard({ snowStations }: { snowStations: SnowStation[] }) {
   const [locationId, setLocationId] = useState<ForecastLocationId>('san-martino');
   const [modelId, setModelId] = useState<ForecastModelId>('ecmwf_ifs025');
   const location = forecastLocations.find((item) => item.id === locationId)!;
@@ -30,6 +32,9 @@ export function ForecastDashboard() {
   const { data, isLoading, isError, error, refetch, isFetching } = useEnsembleForecast(location, model);
   const stats = useMemo(() => data ? buildForecastStats(data) : null, [data]);
   const daily = useMemo(() => data ? buildDailyForecasts(data) : [], [data]);
+  const snowStation = snowStations.find((station) =>
+    station.id === (locationId === 'san-martino' ? 'snow-sanmartino' : 'snow-passorolle'),
+  );
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-6">
@@ -166,6 +171,8 @@ export function ForecastDashboard() {
             <TemperatureSpaghettiChart forecast={data} />
             <PrecipitationForecastChart forecast={data} />
           </div>
+
+          <SnowAccumulationChart forecast={data} snowStation={snowStation} />
 
           <DailyForecastSection forecast={data} daily={daily} />
 

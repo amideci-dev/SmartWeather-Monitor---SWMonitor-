@@ -131,7 +131,7 @@ export async function fetchEnsembleForecast(
 }
 
 function futureIndices(forecast: EnsembleForecast, now: Date, hours?: number) {
-  const start = now.getTime() - 30 * 60 * 1000;
+  const start = now.getTime();
   const end = hours ? now.getTime() + hours * 60 * 60 * 1000 : Number.POSITIVE_INFINITY;
   return forecast.times
     .map((time, index) => ({ index, epoch: forecastTimeToEpoch(time, forecast.utcOffsetSeconds) }))

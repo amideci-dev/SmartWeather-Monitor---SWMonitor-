@@ -409,7 +409,7 @@ const Index = () => {
       </div>
       ) : (
         <main className="flex-1 overflow-y-auto">
-          <ForecastDashboard />
+          <ForecastDashboard snowStations={snowStations} />
         </main>
       )}
     </div>
