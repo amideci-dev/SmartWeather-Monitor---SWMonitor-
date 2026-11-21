@@ -19,6 +19,18 @@ interface LiveWeatherResponse {
 }
 
 async function fetchLiveData(): Promise<LiveWeatherResponse> {
+  const url = import.meta.env.VITE_API_URL;
+
+  // Produzione (Cloudflare Pages): collector sul NAS
+  if (url) {
+    const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data?.success) throw new Error(data?.error || 'Unknown error');
+    return data;
+  }
+
+  // Anteprima Lovable (VITE_API_URL non impostata): funzione Supabase come prima
   const { data, error } = await supabase.functions.invoke('fetch-weather-data');
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || 'Unknown error');
