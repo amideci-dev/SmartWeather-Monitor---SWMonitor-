@@ -13,23 +13,14 @@ import {
   Thermometer,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { forecastLocations, forecastModels } from '@/data/forecastLocations';
 import { useEnsembleForecast } from '@/hooks/useEnsembleForecast';
 import { buildDailyForecasts, buildForecastNarrative, buildForecastStats } from '@/lib/forecast';
 import { ForecastLocationId, ForecastModelId } from '@/types/forecast';
 import { PrecipitationForecastChart, TemperatureSpaghettiChart } from './ForecastCharts';
-
-const formatDay = (date: string) => {
-  const formatted = new Intl.DateTimeFormat('it-IT', {
-    weekday: 'short',
-    day: '2-digit',
-    month: 'short',
-    timeZone: 'UTC',
-  }).format(new Date(`${date}T12:00:00Z`));
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-};
+import { DailyForecastSection } from './DailyForecastSection';
 
 export function ForecastDashboard() {
   const [locationId, setLocationId] = useState<ForecastLocationId>('san-martino');
@@ -176,32 +167,7 @@ export function ForecastDashboard() {
             <PrecipitationForecastChart forecast={data} />
           </div>
 
-          <section>
-            <div className="mb-3 flex items-center gap-2">
-              <CloudSun className="h-4 w-4 text-primary" />
-              <h3 className="text-sm font-bold">Sintesi giornaliera</h3>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7">
-              {daily.map((day) => (
-                <Card key={day.date}>
-                  <CardContent className="p-3">
-                    <p className="text-xs font-bold">{formatDay(day.date)}</p>
-                    <p className="mt-2 font-mono text-lg font-bold">{day.tempMin}° <span className="text-muted-foreground">/</span> {day.tempMax}°</p>
-                    <div className="mt-2 flex items-center gap-1.5 text-[11px] text-info">
-                      <CloudRain className="h-3.5 w-3.5" />
-                      {data.model.kind === 'ensemble' ? `${day.precipitationProbability}%` : `${day.meanPrecipitationTotal} mm`}
-                    </div>
-                    {data.model.kind === 'ensemble' && day.snowProbability >= 10 && (
-                      <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                        <Snowflake className="h-3 w-3" /> Neve {day.snowProbability}%
-                      </div>
-                    )}
-                    <p className="mt-2 text-[10px] text-muted-foreground">Media {day.meanPrecipitationTotal} mm</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
+          <DailyForecastSection forecast={data} daily={daily} />
 
           <div className="flex flex-col gap-2 border-t pt-4 text-[11px] text-muted-foreground sm:flex-row sm:items-center">
             <p>

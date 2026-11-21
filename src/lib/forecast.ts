@@ -5,10 +5,11 @@ import {
   ForecastLocation,
   ForecastModel,
   ForecastStats,
+  HourlyForecast,
 } from '@/types/forecast';
 
 const API_URL = 'https://ensemble-api.open-meteo.com/v1/ensemble';
-const VARIABLES = ['temperature_2m', 'precipitation', 'snowfall'] as const;
+const VARIABLES = ['temperature_2m', 'precipitation', 'snowfall', 'weather_code', 'cloud_cover'] as const;
 
 type NumericArray = (number | null)[];
 interface EnsembleApiResponse {
@@ -73,6 +74,8 @@ export function parseEnsembleResponse(
       temperature: (hourly[temperatureKey] || []) as NumericArray,
       precipitation: (hourly[`precipitation${suffix}`] || Array(times.length).fill(null)) as NumericArray,
       snowfall: (hourly[`snowfall${suffix}`] || Array(times.length).fill(null)) as NumericArray,
+      weatherCode: (hourly[`weather_code${suffix}`] || Array(times.length).fill(null)) as NumericArray,
+      cloudCover: (hourly[`cloud_cover${suffix}`] || Array(times.length).fill(null)) as NumericArray,
     };
   });
 
@@ -93,6 +96,8 @@ export function parseEnsembleResponse(
     temperature: member.temperature.slice(0, lastValidIndex + 1),
     precipitation: member.precipitation.slice(0, lastValidIndex + 1),
     snowfall: member.snowfall.slice(0, lastValidIndex + 1),
+    weatherCode: member.weatherCode.slice(0, lastValidIndex + 1),
+    cloudCover: member.cloudCover.slice(0, lastValidIndex + 1),
   }));
 
   return {
@@ -235,6 +240,68 @@ export function buildForecastNarrative(stats: ForecastStats, modelName: string) 
   return `${modelName}, prossime ${stats.hours} ore: temperature medie orarie tra ${stats.tempMin}°C e ${stats.tempMax}°C, ${trend}; ${precipitation} (${stats.precipitationProbability}% degli scenari).${snow}${heavy} ${agreement} tra i membri, con una dispersione media di ${stats.spread}°C.`;
 }
 
+function buildHourlyAt(forecast: EnsembleForecast, index: number): HourlyForecast {
+  const temperature = meanTemperatureAt(forecast, index);
+  const precipitationValues = forecast.members.map((member) => Math.max(0, member.precipitation[index] || 0));
+  const snowfallValues = forecast.members.map((member) => Math.max(0, member.snowfall[index] || 0));
+  const precipitation = average(precipitationValues);
+  const snowfall = average(snowfallValues);
+  const precipitationProbability = Math.round(
+    precipitationValues.filter((value) => value >= 0.1).length / precipitationValues.length * 100,
+  );
+  const snowProbability = Math.round(
+    snowfallValues.filter((value) => value >= 0.05).length / snowfallValues.length * 100,
+  );
+  const snowAvailable = forecast.members.some((member) => typeof member.snowfall[index] === 'number');
+  const weatherCodes = finite(forecast.members.map((member) => member.weatherCode[index]));
+  const cloudValues = finite(forecast.members.map((member) => member.cloudCover[index]));
+  const cloudCover = average(cloudValues);
+  const codeRatio = (codes: number[]) => weatherCodes.length
+    ? weatherCodes.filter((code) => codes.includes(code)).length / weatherCodes.length
+    : 0;
+
+  let condition: HourlyForecast['condition'];
+  if (codeRatio([95, 96, 99]) >= 0.2) {
+    condition = 'storm';
+  } else if (
+    snowProbability >= 50 ||
+    codeRatio([71, 73, 75, 77, 85, 86]) >= 0.5 ||
+    (precipitation >= 0.1 && temperature <= 0 && (!snowAvailable || snowProbability >= 20))
+  ) {
+    condition = 'snow';
+  } else if (
+    precipitationProbability >= 50 ||
+    codeRatio([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82]) >= 0.5 ||
+    (forecast.members.length === 1 && precipitation >= 0.1)
+  ) {
+    condition = 'rain';
+  } else if (cloudCover >= 70 || codeRatio([3]) >= 0.5) {
+    condition = 'cloudy';
+  } else if (cloudCover >= 30 || codeRatio([2]) >= 0.5) {
+    condition = 'partly-cloudy';
+  } else {
+    condition = 'dry';
+  }
+
+  return {
+    time: forecast.times[index],
+    temperature: round(temperature, 1),
+    precipitation: round(precipitation, 2),
+    precipitationProbability,
+    snowfall: round(snowfall, 2),
+    snowProbability,
+    snowAvailable,
+    condition,
+  };
+}
+
+export function buildHourlyForecasts(forecast: EnsembleForecast, date: string): HourlyForecast[] {
+  return forecast.times
+    .map((time, index) => ({ time, index }))
+    .filter(({ time }) => time.slice(0, 10) === date)
+    .map(({ index }) => buildHourlyAt(forecast, index));
+}
+
 export function buildDailyForecasts(
   forecast: EnsembleForecast,
   now = new Date(),
@@ -249,21 +316,39 @@ export function buildDailyForecasts(
 
   return [...groups.entries()].slice(0, days).map(([date, dayIndices]) => {
     const meanTemperatures = dayIndices.map((index) => meanTemperatureAt(forecast, index));
+    const precipitationProbability = Math.round(
+      forecast.members.filter((member) => memberPrecipitationTotal(member, dayIndices) >= 1).length /
+        forecast.members.length * 100,
+    );
+    const snowProbability = Math.round(
+      forecast.members.filter((member) => memberSnowfallTotal(member, dayIndices) >= 1).length /
+        forecast.members.length * 100,
+    );
+    const meanPrecipitationTotal = round(average(forecast.members.map((member) =>
+      memberPrecipitationTotal(member, dayIndices),
+    )), 1);
+    const hourly = dayIndices.map((index) => buildHourlyAt(forecast, index));
+    const cloudCover = average(dayIndices.flatMap((index) =>
+      forecast.members.map((member) => member.cloudCover[index]),
+    ));
+    const condition: DailyForecast['condition'] = hourly.some((hour) => hour.condition === 'storm')
+      ? 'storm'
+      : snowProbability >= 30 || hourly.filter((hour) => hour.condition === 'snow').length >= 3
+        ? 'snow'
+        : precipitationProbability >= 50 || meanPrecipitationTotal >= 1 || hourly.some((hour) => hour.condition === 'rain')
+          ? 'rain'
+          : cloudCover >= 70
+            ? 'cloudy'
+            : cloudCover >= 30 ? 'partly-cloudy' : 'dry';
+
     return {
       date,
       tempMin: round(Math.min(...meanTemperatures), 1),
       tempMax: round(Math.max(...meanTemperatures), 1),
-      precipitationProbability: Math.round(
-        forecast.members.filter((member) => memberPrecipitationTotal(member, dayIndices) >= 1).length /
-          forecast.members.length * 100,
-      ),
-      snowProbability: Math.round(
-        forecast.members.filter((member) => memberSnowfallTotal(member, dayIndices) >= 1).length /
-          forecast.members.length * 100,
-      ),
-      meanPrecipitationTotal: round(average(forecast.members.map((member) =>
-        memberPrecipitationTotal(member, dayIndices),
-      )), 1),
+      precipitationProbability,
+      snowProbability,
+      meanPrecipitationTotal,
+      condition,
     };
   });
 }

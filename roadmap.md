@@ -5,3 +5,6 @@
 - [x] Mostrare grafici spaghetti di temperatura e precipitazioni con leggibilità desktop/mobile.
 - [x] Generare un breve commento automatico su fenomeni, temperature e accordo tra scenari.
 - [x] Verificare caricamento dati, navigazione e visualizzazione mobile.
+- [x] Aggiungere condizione e icona meteo alla sintesi di ogni giornata.
+- [x] Rendere ogni giornata espandibile con la previsione oraria.
+- [x] Verificare icone, espansione e leggibilità su desktop e mobile.

@@ -4,6 +4,7 @@ import {
   buildDailyForecasts,
   buildForecastNarrative,
   buildForecastStats,
+  buildHourlyForecasts,
   parseEnsembleResponse,
 } from '@/lib/forecast';
 
@@ -60,6 +61,18 @@ describe('ensemble forecasts', () => {
     const daily = buildDailyForecasts(makeForecast(), new Date('2026-11-21T00:00:00Z'));
     expect(daily).toHaveLength(4);
     expect(daily[1].precipitationProbability).toBe(0);
+  });
+
+  it('adds a daily condition and the hourly values shown on expansion', () => {
+    const forecast = makeForecast();
+    const daily = buildDailyForecasts(forecast, new Date('2026-11-21T00:00:00Z'));
+    const hourly = buildHourlyForecasts(forecast, '2026-11-21');
+    expect(daily[0].condition).toBe('snow');
+    expect(hourly).toHaveLength(24);
+    expect(hourly[12].condition).toBe('snow');
+    expect(hourly[12].temperature).toBe(1);
+    expect(hourly[12].precipitation).toBe(3);
+    expect(hourly[12].precipitationProbability).toBe(50);
   });
 
   it('removes unavailable trailing hours instead of treating them as zero', () => {

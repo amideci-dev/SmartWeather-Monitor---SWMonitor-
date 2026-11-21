@@ -1,5 +1,6 @@
 export type ForecastLocationId = 'san-martino' | 'passo-rolle';
 export type ForecastModelId = 'ecmwf_ifs025' | 'gfs_seamless' | 'icon_seamless' | 'meteofrance_arome_france_hd';
+export type ForecastCondition = 'dry' | 'partly-cloudy' | 'cloudy' | 'rain' | 'snow' | 'storm';
 
 export interface ForecastLocation {
   id: ForecastLocationId;
@@ -25,6 +26,8 @@ export interface EnsembleMember {
   temperature: (number | null)[];
   precipitation: (number | null)[];
   snowfall: (number | null)[];
+  weatherCode: (number | null)[];
+  cloudCover: (number | null)[];
 }
 
 export interface EnsembleForecast {
@@ -59,4 +62,16 @@ export interface DailyForecast {
   precipitationProbability: number;
   snowProbability: number;
   meanPrecipitationTotal: number;
+  condition: ForecastCondition;
+}
+
+export interface HourlyForecast {
+  time: string;
+  temperature: number;
+  precipitation: number;
+  precipitationProbability: number;
+  snowfall: number;
+  snowProbability: number;
+  snowAvailable: boolean;
+  condition: ForecastCondition;
 }
