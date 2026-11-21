@@ -90,7 +90,7 @@ const Index = () => {
         <div className="flex h-14 items-center gap-3 px-4">
           <Flame className="h-6 w-6 text-accent" />
           <h1 className="text-lg font-extrabold tracking-tight">
-            MeteoWatch <span className="text-accent">VVF</span>
+            <span className="text-primary">S</span>mart <span className="text-primary">W</span>eather <span className="text-primary">M</span>onitor
           </h1>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
