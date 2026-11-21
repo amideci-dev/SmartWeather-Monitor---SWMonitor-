@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Flame, Radio, Waves, Mountain, LayoutGrid, Snowflake, Camera, RefreshCw, Menu, X, Activity, CloudSun } from 'lucide-react';
+import { Flame, Radio, Waves, Mountain, LayoutGrid, Snowflake, Camera, RefreshCw, X, Activity, CloudSun } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -34,6 +34,13 @@ import { ForecastDashboard } from '@/components/forecast/ForecastDashboard';
 
 type DashboardView = 'situazione' | 'previsioni';
 
+const SECTION_NAV_ITEMS = [
+  { id: 'riepilogo', label: 'Stazioni', icon: '📊' },
+  { id: 'webcams', label: 'Webcams', icon: '📷' },
+  { id: 'idrometri', label: 'Idrometri', icon: '🌊' },
+  { id: 'neve', label: 'Dati Neve', icon: '❄️' },
+];
+
 const Index = () => {
   const queryClient = useQueryClient();
   const [activeView, setActiveView] = useState<DashboardView>('situazione');
@@ -41,7 +48,6 @@ const Index = () => {
   const [mapExpanded, setMapExpanded] = useState(false);
   const [mobileMapOpen, setMobileMapOpen] = useState(false);
   const [mobileMapTab, setMobileMapTab] = useState<'mappa' | 'radar'>('mappa');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Fetch live data
   const { data: liveData, isLoading: isLiveLoading } = useLiveWeatherData();
@@ -87,30 +93,6 @@ const Index = () => {
             MeteoWatch <span className="text-accent">VVF</span>
           </h1>
 
-          {/* Desktop nav */}
-          <nav className={activeView === 'situazione' ? 'hidden sm:flex items-center gap-1 ml-6' : 'hidden'}>
-            {[
-              { id: 'riepilogo', label: 'Stazioni', icon: '📊' },
-              { id: 'webcams', label: 'Webcams', icon: '📷' },
-              { id: 'idrometri', label: 'Idrometri', icon: '🌊' },
-              { id: 'neve', label: 'Dati Neve', icon: '❄️' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveStation(null);
-                  setTimeout(() => {
-                    const el = document.getElementById(item.id);
-                    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }, 50);
-                }}
-                className="px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
-                {item.icon} {item.label}
-              </button>
-            ))}
-          </nav>
-
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
             <AlertBadge alert={mockAlert} />
             <AlertsBell alerts={allAlerts} onSelectStation={handleSelectStation} />
@@ -124,13 +106,6 @@ const Index = () => {
             >
               <RefreshCw className="h-4 w-4 text-muted-foreground" />
             </button>
-            {/* Mobile hamburger */}
-            <button
-              onClick={() => setMobileMenuOpen((v) => !v)}
-              className={`p-1.5 rounded-lg hover:bg-muted transition-colors sm:hidden ${activeView === 'situazione' ? '' : 'hidden'}`}
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
             <div className="hidden sm:flex items-center gap-1.5 text-xs text-success">
               <Radio className="h-3.5 w-3.5 animate-pulse" />
               <span className="font-medium">Live</span>
@@ -138,32 +113,6 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Mobile dropdown menu */}
-        {mobileMenuOpen && activeView === 'situazione' && (
-          <nav className="sm:hidden border-t bg-card px-4 py-2 flex flex-col gap-1">
-            {[
-              { id: 'riepilogo', label: 'Stazioni', icon: '📊' },
-              { id: 'webcams', label: 'Webcams', icon: '📷' },
-              { id: 'idrometri', label: 'Idrometri', icon: '🌊' },
-              { id: 'neve', label: 'Dati Neve', icon: '❄️' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setActiveStation(null);
-                  setTimeout(() => {
-                    const el = document.getElementById(item.id);
-                    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }, 50);
-                }}
-                className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-left"
-              >
-                {item.icon} {item.label}
-              </button>
-            ))}
-          </nav>
-        )}
       </header>
 
       {/* Primary dashboard views */}
@@ -172,7 +121,6 @@ const Index = () => {
           value={activeView}
           onValueChange={(value) => {
             setActiveView(value as DashboardView);
-            setMobileMenuOpen(false);
             setMobileMapOpen(false);
           }}
         >
@@ -188,6 +136,29 @@ const Index = () => {
           </TabsList>
         </Tabs>
       </div>
+
+      {/* Section navigation — only in Situazione */}
+      {activeView === 'situazione' && (
+        <div className="shrink-0 border-b bg-card/60">
+          <nav className="flex items-center gap-1 overflow-x-auto px-4 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {SECTION_NAV_ITEMS.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveStation(null);
+                  setTimeout(() => {
+                    const el = document.getElementById(item.id);
+                    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 50);
+                }}
+                className="shrink-0 px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {item.icon} {item.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      )}
 
       {/* Main layout: data (left) + map (right) */}
       {activeView === 'situazione' ? (
