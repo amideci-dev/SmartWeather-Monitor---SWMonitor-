@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Flame, Radio, Waves, Mountain, LayoutGrid, Snowflake, Camera, RefreshCw, Menu, X } from 'lucide-react';
+import { Flame, Radio, Waves, Mountain, LayoutGrid, Snowflake, Camera, RefreshCw, Menu, X, Activity, CloudSun } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -30,9 +30,13 @@ import { stationWebcams } from '@/data/mockWebcams';
 import { generateWindAlerts, generateHydroAlerts, StationAlert } from '@/lib/windAlerts';
 import { useLiveWeatherData } from '@/hooks/useLiveWeatherData';
 import { mergeStationsWithLiveData, mergeHydrometersWithLiveData, mergeSnowWithLiveData } from '@/lib/mergeData';
+import { ForecastDashboard } from '@/components/forecast/ForecastDashboard';
+
+type DashboardView = 'situazione' | 'previsioni';
 
 const Index = () => {
   const queryClient = useQueryClient();
+  const [activeView, setActiveView] = useState<DashboardView>('situazione');
   const [activeStation, setActiveStation] = useState<string | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
   const [mobileMapOpen, setMobileMapOpen] = useState(false);
@@ -84,7 +88,7 @@ const Index = () => {
           </h1>
 
           {/* Desktop nav */}
-          <nav className="hidden sm:flex items-center gap-1 ml-6">
+          <nav className={activeView === 'situazione' ? 'hidden sm:flex items-center gap-1 ml-6' : 'hidden'}>
             {[
               { id: 'riepilogo', label: 'Stazioni', icon: '📊' },
               { id: 'webcams', label: 'Webcams', icon: '📷' },
@@ -111,7 +115,10 @@ const Index = () => {
             <AlertBadge alert={mockAlert} />
             <AlertsBell alerts={allAlerts} onSelectStation={handleSelectStation} />
             <button
-              onClick={() => queryClient.invalidateQueries({ queryKey: ['live-weather-data'] })}
+              onClick={() => {
+                queryClient.invalidateQueries({ queryKey: ['live-weather-data'] });
+                queryClient.invalidateQueries({ queryKey: ['ensemble-forecast'] });
+              }}
               className="p-1.5 rounded-lg hover:bg-muted transition-colors"
               title="Aggiorna dati"
             >
@@ -120,7 +127,7 @@ const Index = () => {
             {/* Mobile hamburger */}
             <button
               onClick={() => setMobileMenuOpen((v) => !v)}
-              className="p-1.5 rounded-lg hover:bg-muted transition-colors sm:hidden"
+              className={`p-1.5 rounded-lg hover:bg-muted transition-colors sm:hidden ${activeView === 'situazione' ? '' : 'hidden'}`}
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -132,7 +139,7 @@ const Index = () => {
         </div>
 
         {/* Mobile dropdown menu */}
-        {mobileMenuOpen && (
+        {mobileMenuOpen && activeView === 'situazione' && (
           <nav className="sm:hidden border-t bg-card px-4 py-2 flex flex-col gap-1">
             {[
               { id: 'riepilogo', label: 'Stazioni', icon: '📊' },
@@ -159,7 +166,31 @@ const Index = () => {
         )}
       </header>
 
+      {/* Primary dashboard views */}
+      <div className="shrink-0 border-b bg-card px-4 py-2">
+        <Tabs
+          value={activeView}
+          onValueChange={(value) => {
+            setActiveView(value as DashboardView);
+            setMobileMenuOpen(false);
+            setMobileMapOpen(false);
+          }}
+        >
+          <TabsList className="mx-auto grid h-11 w-full max-w-md grid-cols-2">
+            <TabsTrigger value="situazione" className="gap-2">
+              <Activity className="h-4 w-4" />
+              Situazione
+            </TabsTrigger>
+            <TabsTrigger value="previsioni" className="gap-2">
+              <CloudSun className="h-4 w-4" />
+              Previsioni
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
       {/* Main layout: data (left) + map (right) */}
+      {activeView === 'situazione' ? (
       <div className="relative isolate flex flex-1 min-h-0">
         {/* Data panel */}
         <main
@@ -376,6 +407,11 @@ const Index = () => {
           </button>
         )}
       </div>
+      ) : (
+        <main className="flex-1 overflow-y-auto">
+          <ForecastDashboard />
+        </main>
+      )}
     </div>
   );
 };
