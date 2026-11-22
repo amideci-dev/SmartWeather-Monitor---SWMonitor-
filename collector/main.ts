@@ -290,6 +290,11 @@ function parsePrimieroHtml(html: string, id: string) {
     return { id, unreachable: false, noData: true };
   }
 
+  // Sensori fermi: la pagina pubblica 0.0 °C e 0.0 % (un'umidità esattamente 0 non è una misura reale)
+  if (humidity !== null && humidity <= 0 && temperature === 0) {
+    return { id, unreachable: false, noData: true };
+  }
+
   const speedKmh = numIn(spanText(html, 'ajaxwind0')) ?? 0;
   const compass = html.match(/direzione\s+([A-Z]{1,3})/)?.[1] ?? 'N';
   const beaufortNum = html.match(/Beaufort:\s*(\d+)/i)?.[1];
