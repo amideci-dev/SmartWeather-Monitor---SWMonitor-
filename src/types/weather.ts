@@ -124,6 +124,7 @@ export interface SnowStation {
   };
   campoNeveCode: string;   // e.g. '4SMC', '31RO'
   lastUpdate: string;
-  currentDepth: number;     // from automatic nivometer (cm)
+  currentDepth: number | null; // cm; null se nella stagione non c'è ancora nessun rilievo
   history: SnowFieldReading[]; // last ~30 days from campo neve
+  noData?: boolean;            // true: fonte raggiunta ma nessun rilievo nella stagione in corso
 }

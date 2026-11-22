@@ -18,6 +18,39 @@ interface SnowCardProps {
 }
 
 export function SnowCard({ data }: SnowCardProps) {
+  if (data.noData) {
+    return (
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Snowflake className="h-4 w-4 text-info" />
+            {data.name}
+            <span className="text-xs text-muted-foreground font-normal">
+              {data.altitude} m
+            </span>
+            <a
+              href={data.urls.campoNeve}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto text-muted-foreground hover:text-primary transition-colors"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="rounded-xl bg-muted/40 p-6 text-center">
+            <p className="text-lg font-semibold">Nessun Rilievo Disponibile</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Nessuna misurazione registrata nella stagione in corso.
+            </p>
+          </div>
+          <p className="text-[10px] text-muted-foreground text-right">{data.location}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const chartData = data.history.map((r) => ({
     date: r.date.slice(5), // MM-DD
     'Neve al suolo': r.hs,

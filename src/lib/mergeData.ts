@@ -120,7 +120,19 @@ export function mergeSnowWithLiveData(
 
   return mockSnowStations.map((mock) => {
     const live = liveSnow.find((l) => l.id === mock.id);
-    if (!live || live.unreachable || !live.history?.length) return mock;
+    if (!live || live.unreachable) return mock;
+
+    // Fonte raggiunta ma nessun rilievo nella stagione in corso (es. inizio inverno):
+    // non mostrare i dati di esempio come se fossero attuali.
+    if (!live.history?.length) {
+      return {
+        ...mock,
+        noData: true,
+        lastUpdate: '',
+        currentDepth: null,
+        history: [],
+      };
+    }
 
     return {
       ...mock,
