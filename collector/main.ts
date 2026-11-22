@@ -410,8 +410,8 @@ function parseRosetta(wx: string, wx4: string, id: string) {
     return m ? parseFloat(m[1]) : speedKmh;
   };
 
-  const tMin = wx.match(/Minima\s*<span[^>]*>\s*(-?[\d.]+)\s*C\s*<\/span>\s*ore\s*(\d{1,2}:\d{2})/i);
-  const tMax = wx.match(/Massima\s*<span[^>]*>\s*(-?[\d.]+)\s*C\s*<\/span>\s*ore\s*(\d{1,2}:\d{2})/i);
+  const tMin = wx.match(/Minima\s*<span[^>]*>\s*(-?[\d.]+)[^<\d]{0,6}<\/span>\s*ore\s*(\d{1,2}:\d{2})/i);
+  const tMax = wx.match(/Massima\s*<span[^>]*>\s*(-?[\d.]+)[^<\d]{0,6}<\/span>\s*ore\s*(\d{1,2}:\d{2})/i);
   const gustDay = wx.match(/Raffica\s+vento\s+max\s*<span[^>]*>\s*([\d.]+)\s*km\/h[\s\S]*?<\/span>\s*ore\s*(\d{1,2}:\d{2})/i);
   const gustLastHour = wx4.match(/ultim.{1,8}ora[\s\S]*?([\d.]+)\s*km\/?h/i);
   const gustToday = wx4.match(/oggi<\/td>[\s\S]*?([\d.]+)\s*km\/?h[\s\S]*?\((\d{1,2}:\d{2})\)/i);
