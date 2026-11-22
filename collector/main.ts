@@ -106,20 +106,26 @@ function speedToBeaufort(kmh: number): { scale: number; desc: string } {
   return { scale: t.scale, desc: t.desc };
 }
 
+// ─── curl helper ───
+// Il server di MeteoTrentino chiude la connessione TLS al fetch di Deno ("Connection reset by peer")
+// ma risponde a curl. Per quel sito usiamo curl.
+async function curlText(url: string, timeoutSec = 10): Promise<string> {
+  const cmd = new Deno.Command('curl', {
+    args: ['-sS', '-L', '--max-time', String(timeoutSec), '-A', 'Mozilla/5.0 (compatible; WeatherDashboard/1.0)', url],
+    stdout: 'piped',
+    stderr: 'piped',
+  });
+  const { code, stdout, stderr } = await cmd.output();
+  if (code !== 0) {
+    throw new Error(`curl exit ${code}: ${new TextDecoder().decode(stderr).trim()}`);
+  }
+  return new TextDecoder().decode(stdout);
+}
+
 async function fetchXmlViaProxy(url: string): Promise<string> {
-  // Try direct fetch first with short timeout
-  try {
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(5000),
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WeatherDashboard/1.0)' },
-    });
-    if (res.ok) {
-      const text = await res.text();
-      if (text.includes('<datiOggi') || text.includes('<temperatura>')) return text;
-    } else { await res.text(); }
-  } catch { /* blocked, fall through */ }
-  
-  throw new Error('MeteoTrentino XML blocked from cloud runtime');
+  const text = await curlText(url);
+  if (text.includes('<datiOggi') || text.includes('<temperatura>')) return text;
+  throw new Error('MeteoTrentino: risposta XML non valida');
 }
 
 async function fetchXmlStation(config: typeof XML_STATIONS[0]) {
@@ -546,9 +552,7 @@ async function fetchSnowStation(config: typeof SNOW_STATIONS[0]) {
   try {
     const season = getCurrentSnowSeason();
     const url = `https://dati.meteotrentino.it/service.asmx/rilieviNeveStagionaliUnaStazioneValangheJson?stagione=${season}&camponeve=${config.campoNeveCode}`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
+    const json = JSON.parse(await curlText(url));
 
     const obs = json?.osservazioni;
     if (!Array.isArray(obs) || obs.length === 0) {
