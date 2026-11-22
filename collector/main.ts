@@ -254,166 +254,142 @@ function parseNumber(s: string): number {
   return parseFloat(cleaned) || 0;
 }
 
+// Pagina principale della stazione, es. https://www.primierometeo.it/colverde/
+// (le vecchie tabella.php / 9meteo_vento_.php non esistono più: i riquadri sono nella pagina stessa)
+const COMPASS_DEG: Record<string, number> = {
+  N: 0, NNE: 22.5, NE: 45, ENE: 67.5, E: 90, ESE: 112.5, SE: 135, SSE: 157.5,
+  S: 180, SSW: 202.5, SW: 225, WSW: 247.5, W: 270, WNW: 292.5, NW: 315, NNW: 337.5,
+};
+const DEG = '(?:°|&deg;|\\uFFFD|\\u00B0)';
+
+function numIn(s: string | null | undefined): number | null {
+  if (!s) return null;
+  const m = s.replace(/&deg;|&nbsp;/g, ' ').match(/-?\d+(?:\.\d+)?/);
+  return m ? parseFloat(m[0]) : null;
+}
+
+function spanText(html: string, id: string): string | null {
+  const m = html.match(new RegExp(`id="${id}"[^>]*>([\\s\\S]*?)</span>`, 'i'));
+  return m ? m[1].replace(/<[^>]*>/g, '').trim() : null;
+}
+
+function trendFromGif(html: string, id: string): string {
+  const m = html.match(new RegExp(`id="${id}"[\\s\\S]{0,300}?(rising|falling|steady)\\.gif`, 'i'));
+  if (!m) return 'stable';
+  const t = m[1].toLowerCase();
+  return t === 'rising' ? 'rising' : t === 'falling' ? 'falling' : 'stable';
+}
+
+function parsePrimieroHtml(html: string, id: string) {
+  const lastUpdate = spanText(html, 'ajaxdate0') ?? '';
+  const temperature = numIn(spanText(html, 'ajaxtemp'));
+  const humidity = numIn(spanText(html, 'ajaxhumidity'));
+
+  // Pagina senza valori (segnaposto vuoti): niente zeri finti
+  if (temperature === null || /ore\s*:?\s*$/.test(lastUpdate) || lastUpdate === '') {
+    return { id, unreachable: false, noData: true };
+  }
+
+  const speedKmh = numIn(spanText(html, 'ajaxwind0')) ?? 0;
+  const compass = html.match(/direzione\s+([A-Z]{1,3})/)?.[1] ?? 'N';
+  const beaufortNum = html.match(/Beaufort:\s*(\d+)/i)?.[1];
+  const beaufortCalc = speedToBeaufort(speedKmh);
+  const beaufortDesc = html.match(/<em>\s*(.*?)\s*-\s*Beaufort/i)?.[1];
+
+  const avg = (n: number) => {
+    const m = html.match(new RegExp(`${n} min(?:</font>)?\\s*</td>\\s*<td[^>]*>\\s*([\\d.]+)\\s*km/h`, 'i'));
+    return m ? parseFloat(m[1]) : speedKmh;
+  };
+
+  const pBaro = html.match(/id="ajaxbaro"[^>]*>\s*([\d.]+)\s*hpa/i);
+  const pArrow = html.match(/id="ajaxbaroarrow"[\s\S]*?alt="(Rising|Falling|Steady)\s*([\d.]+)?/i);
+  const pTrend = pArrow
+    ? pArrow[1].toLowerCase() === 'rising' ? 'rising' : pArrow[1].toLowerCase() === 'falling' ? 'falling' : 'stable'
+    : 'stable';
+
+  const tMin = html.match(new RegExp(`T\\.min[\\s\\S]*?(-?\\d+(?:\\.\\d+)?)\\s*${DEG}\\s*C[\\s\\S]*?(\\d{1,2}:\\d{2})`));
+  const tMax = html.match(new RegExp(`T\\.max[\\s\\S]*?(-?\\d+(?:\\.\\d+)?)\\s*${DEG}\\s*C[\\s\\S]*?(\\d{1,2}:\\d{2})`));
+  const gustDay = html.match(/Vento<\/span>[\s\S]*?(\d+(?:\.\d+)?)\s*km\/h[\s\S]*?(\d{1,2}:\d{2})/);
+  const rainDay = html.match(/Pioggia<\/span>[\s\S]*?(\d+(?:\.\d+)?)\s*mm/);
+  const rainMaxRate = html.match(/\((\d+(?:\.\d+)?)\s*mm\/hr\)/);
+
+  const gustLastHour = html.match(/ultim.{1,8}ora[\s\S]*?([\d.]+)\s*km\/h/i);
+  const gustToday = html.match(/oggi<\/td>[\s\S]*?([\d.]+)\s*km\/h[\s\S]*?\((\d{1,2}:\d{2})\)/);
+  const windChill = html.match(new RegExp(`windchill[\\s\\S]*?</td>\\s*<td[^>]*>\\s*(-?[\\d.]+)\\s*${DEG}`, 'i'));
+
+  const iconName = html.match(/id="ajaxconditionicon2"[\s\S]*?<img[^>]*src="[^"]*\/([^"/]+)\.png"/i)?.[1] ?? 'sereno';
+  const conditionIcon = iconName.includes('sereno') ? (iconName.includes('sera') || iconName.includes('notte') ? '🌙' : '☀️')
+    : iconName.includes('coperto') ? '☁️'
+    : iconName.includes('pioggia') || iconName.includes('rain') ? '🌧️'
+    : iconName.includes('neve') || iconName.includes('snow') ? '🌨️'
+    : '⛅';
+
+  const maxGust = gustDay ? parseFloat(gustDay[1]) : 0;
+
+  return {
+    id,
+    unreachable: false,
+    lastUpdate,
+    weather: {
+      condition: iconName.replace(/_/g, ' '),
+      conditionIcon,
+      temperature,
+      temperatureTrend: trendFromGif(html, 'ajaxtemparrow'),
+      temperatureTrendValue: 0,
+      humidity: humidity ?? 0,
+      humidityTrend: 'stable',
+      humidityTrendValue: 0,
+      dewPoint: numIn(spanText(html, 'ajaxdew0')),
+      perceivedTemp: numIn(spanText(html, 'ajaxapparenttemp')),
+      wetBulb: numIn(spanText(html, 'ajaxwetbulb')),
+      rainIntensity: numIn(spanText(html, 'ajaxrainratehr0')) ?? 0,
+      pressure: pBaro ? parseFloat(pBaro[1]) : null,
+      pressureTrend: pTrend,
+      pressureTrendValue: pArrow?.[2] ? parseFloat(pArrow[2]) : 0,
+      dailyExtremes: {
+        tempMin: tMin ? parseFloat(tMin[1]) : temperature,
+        tempMinTime: tMin ? tMin[2] : '—',
+        tempMax: tMax ? parseFloat(tMax[1]) : temperature,
+        tempMaxTime: tMax ? tMax[2] : '—',
+        maxGust,
+        maxGustTime: gustDay ? gustDay[2] : '—',
+        dailyRain: rainDay ? parseFloat(rainDay[1]) : 0,
+        maxRainIntensity: rainMaxRate ? parseFloat(rainMaxRate[1]) : 0,
+      },
+    },
+    wind: {
+      direction: compass,
+      directionDegrees: COMPASS_DEG[compass] ?? 0,
+      speed: speedKmh,
+      beaufort: beaufortNum !== undefined ? parseInt(beaufortNum) : beaufortCalc.scale,
+      beaufortDescription: beaufortDesc || beaufortCalc.desc,
+      windChill: windChill ? parseFloat(windChill[1]) : null,
+      feelsLike: null,
+      averages: { min10: avg(10), min15: avg(15), min30: avg(30), min60: avg(60) },
+      gusts: {
+        lastHour: gustLastHour ? parseFloat(gustLastHour[1]) : 0,
+        today: gustToday ? parseFloat(gustToday[1]) : maxGust,
+        todayTime: gustToday ? gustToday[2] : '—',
+      },
+    },
+  };
+}
+
 async function fetchHtmlStation(config: typeof HTML_STATIONS[0]) {
   try {
-    const [weatherRes, windRes] = await Promise.all([
-      fetch(`https://www.primierometeo.it/${config.slug}/tabella.php`, { signal: AbortSignal.timeout(10000) }),
-      fetch(`https://www.primierometeo.it/${config.slug}/9meteo_vento_.php`, { signal: AbortSignal.timeout(10000) }),
-    ]);
-
-    if (!weatherRes.ok) throw new Error(`Weather HTTP ${weatherRes.status}`);
-    const weatherHtml = await weatherRes.text();
-    const windHtml = windRes.ok ? await windRes.text() : '';
-
-    // Parse weather page
-    const tempMatch = weatherHtml.match(/id="ajaxtemp"[^>]*>[\s\S]*?(\-?[\d.]+)°C/);
-    const temperature = tempMatch ? parseFloat(tempMatch[1]) : 0;
-    const humPresent = /id="ajaxhumidity"[^>]*>[\s\S]*?(\d+)%/.test(weatherHtml);
-    // Pagina senza valori (i dati vengono inseriti via JavaScript): niente zeri finti
-    if (!tempMatch && !humPresent) {
-      return { id: config.id, unreachable: false, noData: true };
+    const res = await fetch(`https://www.primierometeo.it/${config.slug}/`, {
+      signal: AbortSignal.timeout(10000),
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WeatherDashboard/1.0)' },
+    });
+    if (!res.ok) throw new Error(`Weather HTTP ${res.status}`);
+    const buf = await res.arrayBuffer();
+    let html: string;
+    try {
+      html = new TextDecoder('utf-8', { fatal: true }).decode(buf);
+    } catch {
+      html = new TextDecoder('windows-1252').decode(buf);
     }
-
-    const tempTrendMatch = weatherHtml.match(/alt="(Colder|Warmer|Steady)\s*([\d.]+)?/i);
-    const temperatureTrend = tempTrendMatch
-      ? tempTrendMatch[1].toLowerCase() === 'colder' ? 'falling'
-        : tempTrendMatch[1].toLowerCase() === 'warmer' ? 'rising' : 'stable'
-      : 'stable';
-    const temperatureTrendValue = tempTrendMatch ? parseFloat(tempTrendMatch[2] || '0') : 0;
-
-    const humMatch = weatherHtml.match(/id="ajaxhumidity"[^>]*>[\s\S]*?(\d+)%/);
-    const humidity = humMatch ? parseInt(humMatch[1]) : 0;
-
-    const humTrendMatch = weatherHtml.match(/alt="(Increased|Decreased|Steady)\s*([\d.]+)?/i);
-    const humidityTrend = humTrendMatch
-      ? humTrendMatch[1].toLowerCase() === 'increased' ? 'rising'
-        : humTrendMatch[1].toLowerCase() === 'decreased' ? 'falling' : 'stable'
-      : 'stable';
-    const humidityTrendValue = humTrendMatch ? parseFloat(humTrendMatch[2] || '0') : 0;
-
-    const dewMatch = weatherHtml.match(/rugiada[\s\S]*?id="ajaxdew0"[^>]*>([\s\S]*?)<\/span>/i);
-    const dewPoint = dewMatch ? parseNumber(dewMatch[1]) : null;
-
-    const percMatch = weatherHtml.match(/percepita[\s\S]*?id="ajaxapparenttemp"[^>]*>([\s\S]*?)<\/span>/i);
-    const perceivedTemp = percMatch ? parseNumber(percMatch[1]) : null;
-
-    const wetBulbMatch = weatherHtml.match(/umido[\s\S]*?id="ajaxwetbulb"[^>]*>([\s\S]*?)<\/span>/i);
-    const wetBulb = wetBulbMatch ? parseNumber(wetBulbMatch[1]) : null;
-
-    const rainIntMatch = weatherHtml.match(/id="ajaxrainratehr0"[^>]*>([\s\S]*?)mm/i);
-    const rainIntensity = rainIntMatch ? parseNumber(rainIntMatch[1]) : 0;
-
-    const baroMatch = weatherHtml.match(/id="ajaxbaro"[^>]*>\s*([\d.]+)\s*hPa/i);
-    const pressure = baroMatch ? parseFloat(baroMatch[1]) : null;
-
-    const baroTrendMatch = weatherHtml.match(/id="ajaxbaroarrow"[\s\S]*?alt="(Rising|Falling|Steady)\s*([\d.]+)?/i);
-    const pressureTrend = baroTrendMatch
-      ? baroTrendMatch[1].toLowerCase() === 'rising' ? 'rising'
-        : baroTrendMatch[1].toLowerCase() === 'falling' ? 'falling' : 'stable'
-      : 'stable';
-    const pressureTrendValue = baroTrendMatch ? parseFloat(baroTrendMatch[2] || '0') : 0;
-
-    // Daily extremes
-    const tempMinMatch = weatherHtml.match(/Minima[\s\S]*?(\-?[\d.]+)°C[\s\S]*?ore\s+([\d:]+)/i);
-    const tempMaxMatch = weatherHtml.match(/Massima[\s\S]*?(\-?[\d.]+)°C[\s\S]*?ore\s+([\d:]+)/i);
-    const gustMatch = weatherHtml.match(/Raffica[\s\S]*?max[\s\S]*?(\d+[\d.]*)\s*km\/h[\s\S]*?ore\s+([\d:]+)/i);
-    const dailyRainMatch = weatherHtml.match(/id="ajaxrain0"[^>]*>([\s\S]*?)mm/i);
-    const maxIntMatch = weatherHtml.match(/intensità\s+([\d.]+)\s*mm/i);
-
-    const tempMin = tempMinMatch ? parseFloat(tempMinMatch[1]) : temperature;
-    const tempMinTime = tempMinMatch ? tempMinMatch[2] : '—';
-    const tempMax = tempMaxMatch ? parseFloat(tempMaxMatch[1]) : temperature;
-    const tempMaxTime = tempMaxMatch ? tempMaxMatch[2] : '—';
-    const maxGust = gustMatch ? parseFloat(gustMatch[1]) : 0;
-    const maxGustTime = gustMatch ? gustMatch[2] : '—';
-    const dailyRain = dailyRainMatch ? parseNumber(dailyRainMatch[1]) : 0;
-    const maxRainIntensity = maxIntMatch ? parseFloat(maxIntMatch[1]) : 0;
-
-    // Condition icon
-    const iconMatch = weatherHtml.match(/id="ajaxconditionicon2"[\s\S]*?<img[^>]*src="[^"]*\/([^"/]+)\.png"/i);
-    const iconName = iconMatch ? iconMatch[1] : 'sereno';
-    const conditionIcon = iconName.includes('sereno') ? (iconName.includes('sera') || iconName.includes('notte') ? '🌙' : '☀️')
-      : iconName.includes('coperto') ? '☁️'
-      : iconName.includes('pioggia') || iconName.includes('rain') ? '🌧️'
-      : iconName.includes('neve') || iconName.includes('snow') ? '🌨️'
-      : iconName.includes('nuvoloso') ? '⛅'
-      : '⛅';
-
-    // Update time
-    const dateMatch = weatherHtml.match(/id="ajaxdate0"[^>]*>([\s\S]*?)<\/span>/i);
-    const lastUpdate = dateMatch ? dateMatch[1].replace(/<[^>]*>/g, '').trim() : '';
-
-    // Parse wind page
-    let windData = null;
-    if (windHtml) {
-      const windSpeedMatch = windHtml.match(/id="ajaxwind2"[^>]*>[\s\S]*?(\d+[\d.]*)/);
-      const windDirMatch = windHtml.match(/direzione\s+(\w+)/i);
-      const beaufortMatch = windHtml.match(/Beaufort:\s*(\d+)/i);
-      const beaufortDescMatch = windHtml.match(/<em>(.*?)(?:\s*-\s*Beaufort|\s*&nbsp;)/i);
-      const windChillMatch = windHtml.match(/windchill[\s\S]*?<\/td>\s*<td[^>]*>([\s\S]*?)°C/i);
-
-      const windSpeed = windSpeedMatch ? parseFloat(windSpeedMatch[1]) : 0;
-      const beaufort = speedToBeaufort(windSpeed);
-
-      // Wind averages from the table
-      const avgMatches = windHtml.match(/(\d+[\d.]*)\s*km\/h/g) || [];
-      const avgValues = avgMatches.map(m => parseFloat(m));
-
-      windData = {
-        direction: windDirMatch ? windDirMatch[1] : 'N',
-        directionDegrees: 0,
-        speed: windSpeed,
-        beaufort: beaufort.scale,
-        beaufortDescription: beaufortDescMatch ? beaufortDescMatch[1].trim() : beaufort.desc,
-        windChill: windChillMatch ? parseNumber(windChillMatch[1]) : null,
-        feelsLike: null,
-        averages: {
-          min10: avgValues[0] || windSpeed,
-          min15: avgValues[1] || windSpeed,
-          min30: avgValues[2] || windSpeed,
-          min60: avgValues[3] || windSpeed,
-        },
-        gusts: {
-          lastHour: 0,
-          today: maxGust,
-          todayTime: maxGustTime,
-        },
-      };
-    }
-
-    return {
-      id: config.id,
-      unreachable: false,
-      lastUpdate,
-      weather: {
-        condition: iconName.replace(/_/g, ' '),
-        conditionIcon,
-        temperature,
-        temperatureTrend,
-        temperatureTrendValue,
-        humidity,
-        humidityTrend,
-        humidityTrendValue,
-        dewPoint,
-        perceivedTemp,
-        wetBulb,
-        rainIntensity,
-        pressure,
-        pressureTrend,
-        pressureTrendValue,
-        dailyExtremes: {
-          tempMin,
-          tempMinTime,
-          tempMax,
-          tempMaxTime,
-          maxGust,
-          maxGustTime,
-          dailyRain,
-          maxRainIntensity,
-        },
-      },
-      wind: windData,
-    };
+    return parsePrimieroHtml(html, config.id);
   } catch (e) {
     console.error(`Error fetching HTML station ${config.id}:`, e);
     return { id: config.id, unreachable: true, error: String(e) };
