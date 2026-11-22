@@ -402,8 +402,17 @@ async function fetchHtmlStation(config: typeof HTML_STATIONS[0]) {
 // ─── WeatherUnderground ───
 async function fetchWunderground() {
   try {
+    const apiKey = Deno.env.get('WU_API_KEY');
+    if (!apiKey) throw new Error('WU_API_KEY secret is not configured');
+
+    const params = new URLSearchParams({
+      stationId: 'IPRIMI4',
+      format: 'json',
+      units: 'm',
+      apiKey,
+    });
     const res = await fetch(
-      'https://api.weather.com/v2/pws/observations/current?stationId=IPRIMI4&format=json&units=m&apiKey=6532d6454b8aa370768e63d6ba5a832e',
+      `https://api.weather.com/v2/pws/observations/current?${params}`,
       { signal: AbortSignal.timeout(10000) }
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
