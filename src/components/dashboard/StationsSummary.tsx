@@ -35,7 +35,7 @@ export function StationsSummary({ stations, onSelectStation }: StationsSummaryPr
             onClick={() => onSelectStation(s.id)}
           >
             {/* Unreachable overlay */}
-            {s.unreachable && !dismissedWarnings.has(s.id) && (
+            {(s.unreachable || s.noData) && !dismissedWarnings.has(s.id) && (
               <div className="absolute inset-0 z-10 bg-background/80 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1 p-4">
                 <button
                   className="absolute top-2 right-2 p-1 rounded-md hover:bg-muted transition-colors"
@@ -48,10 +48,12 @@ export function StationsSummary({ stations, onSelectStation }: StationsSummaryPr
                 </button>
                 <AlertTriangle className="h-5 w-5 text-warning" />
                 <p className="text-sm font-semibold text-foreground text-center">
-                  Problemi nel raggiungere la stazione
+                  {s.noData ? 'Nessun dato disponibile' : 'Problemi nel raggiungere la stazione'}
                 </p>
                 <p className="text-[11px] text-muted-foreground text-center">
-                  I dati potrebbero non essere aggiornati
+                  {s.noData
+                    ? 'La stazione non sta fornendo misure al momento'
+                    : 'I dati potrebbero non essere aggiornati'}
                 </p>
               </div>
             )}

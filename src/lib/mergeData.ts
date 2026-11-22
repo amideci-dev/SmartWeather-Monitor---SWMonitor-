@@ -5,6 +5,7 @@ import { mockSnowStations } from '@/data/mockSnow';
 interface LiveStationData {
   id: string;
   unreachable: boolean;
+  noData?: boolean;
   lastUpdate?: string;
   error?: string;
   weather?: any;
@@ -23,10 +24,11 @@ export function mergeStationsWithLiveData(
 
   return mockStations.map((mock) => {
     const live = liveStations.find((l) => l.id === mock.id);
-    if (!live || live.unreachable) {
+    if (!live || live.unreachable || live.noData) {
       return {
         ...mock,
         unreachable: live?.unreachable ?? false,
+        noData: live?.noData ?? false,
       };
     }
 

@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface LiveStationData {
   id: string;
   unreachable: boolean;
+  noData?: boolean;
   lastUpdate?: string;
   error?: string;
   weather?: any;

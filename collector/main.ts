@@ -142,6 +142,10 @@ async function fetchXmlStation(config: typeof XML_STATIONS[0]) {
     // Temperature series
     const temps = extractAllValues(xml, 'temperatura_aria', 'temperatura');
     const lastTemp = getLastValue(temps);
+    // Stazione raggiunta ma senza nessuna misura oggi (es. sensori fermi): non inventare zeri
+    if (!lastTemp) {
+      return { id: config.id, unreachable: false, noData: true };
+    }
     const tempTrend = getTrend(temps);
 
     // Humidity
@@ -264,6 +268,11 @@ async function fetchHtmlStation(config: typeof HTML_STATIONS[0]) {
     // Parse weather page
     const tempMatch = weatherHtml.match(/id="ajaxtemp"[^>]*>[\s\S]*?(\-?[\d.]+)°C/);
     const temperature = tempMatch ? parseFloat(tempMatch[1]) : 0;
+    const humPresent = /id="ajaxhumidity"[^>]*>[\s\S]*?(\d+)%/.test(weatherHtml);
+    // Pagina senza valori (i dati vengono inseriti via JavaScript): niente zeri finti
+    if (!tempMatch && !humPresent) {
+      return { id: config.id, unreachable: false, noData: true };
+    }
 
     const tempTrendMatch = weatherHtml.match(/alt="(Colder|Warmer|Steady)\s*([\d.]+)?/i);
     const temperatureTrend = tempTrendMatch

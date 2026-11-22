@@ -18,6 +18,7 @@ export interface WeatherStation {
   hasWindSensor?: boolean; // XML stations: true if vento_al_suolo exists
   hasRainSensor?: boolean; // XML stations: true if pluviometro exists
   unreachable?: boolean; // Station currently unreachable
+  noData?: boolean; // Station raggiunta ma senza misure disponibili
   weather: WeatherData;
   wind: WindData;
 }
