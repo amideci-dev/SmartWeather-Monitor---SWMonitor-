@@ -380,7 +380,108 @@ function parsePrimieroHtml(html: string, id: string) {
   };
 }
 
+// ─── Funivia Rosetta: i dati stanno in due riquadri su meteotriveneto.it ───
+const ROSETTA_BASE = 'https://www.meteotriveneto.it/funivia';
+
+function parseRosetta(wx: string, wx4: string, id: string) {
+  const date = spanText(wx, 'ajaxdate') ?? '';
+  const time = spanText(wx, 'ajaxtime') ?? '';
+  const lastUpdate = `${date} ${time}`.trim();
+  const temperature = numIn(spanText(wx, 'ajaxtemp'));
+  if (temperature === null || !date || !time) return { id, unreachable: false, noData: true };
+  const humidity = numIn(spanText(wx, 'ajaxhumidity'));
+
+  // I segnaposto non compilati (es. "%dewpoint%") non sono numeri
+  const dew = spanText(wx, 'ajaxdew');
+  const dewPoint = dew && !dew.includes('%') ? numIn(dew) : null;
+
+  // Pressione: la stazione è a 2640 m, valori > 800 hPa non sono realistici (taratura errata)
+  const baro = numIn(spanText(wx, 'ajaxbaro'));
+  const pressure = baro !== null && baro >= 500 && baro <= 800 ? baro : null;
+
+  const speedKmh = numIn(spanText(wx, 'ajaxwind')) ?? 0;
+  const compass = (spanText(wx, 'ajaxwinddir') ?? wx4.match(/direzione\s+([A-Z]{1,3})/)?.[1] ?? 'N').trim();
+  const calc = speedToBeaufort(speedKmh);
+  const beaufortNum = wx4.match(/Beaufort:\s*(\d+)/i)?.[1];
+  const beaufortDesc = wx4.match(/<em>\s*(.*?)\s*-\s*Beaufort/i)?.[1];
+
+  const avg = (n: number) => {
+    const m = wx4.match(new RegExp(`${n} min(?:</font>)?\\s*</td>\\s*<td[^>]*>\\s*([\\d.]+)\\s*km/h`, 'i'));
+    return m ? parseFloat(m[1]) : speedKmh;
+  };
+
+  const tMin = wx.match(/Minima\s*<span[^>]*>\s*(-?[\d.]+)\s*C\s*<\/span>\s*ore\s*(\d{1,2}:\d{2})/i);
+  const tMax = wx.match(/Massima\s*<span[^>]*>\s*(-?[\d.]+)\s*C\s*<\/span>\s*ore\s*(\d{1,2}:\d{2})/i);
+  const gustDay = wx.match(/Raffica\s+vento\s+max\s*<span[^>]*>\s*([\d.]+)\s*km\/h[\s\S]*?<\/span>\s*ore\s*(\d{1,2}:\d{2})/i);
+  const gustLastHour = wx4.match(/ultim.{1,8}ora[\s\S]*?([\d.]+)\s*km\/?h/i);
+  const gustToday = wx4.match(/oggi<\/td>[\s\S]*?([\d.]+)\s*km\/?h[\s\S]*?\((\d{1,2}:\d{2})\)/i);
+  const windChill = numIn(spanText(wx, 'ajaxwindchill'));
+  const maxGust = gustDay ? parseFloat(gustDay[1]) : gustToday ? parseFloat(gustToday[1]) : 0;
+
+  return {
+    id,
+    unreachable: false,
+    lastUpdate,
+    weather: {
+      condition: 'rilevazione in quota',
+      conditionIcon: '🏔️',
+      temperature,
+      temperatureTrend: 'stable',
+      temperatureTrendValue: 0,
+      humidity: humidity ?? 0,
+      humidityTrend: 'stable',
+      humidityTrendValue: 0,
+      dewPoint,
+      perceivedTemp: numIn(spanText(wx, 'ajaxapparenttemp')),
+      wetBulb: numIn(spanText(wx, 'ajaxwetbulb')),
+      rainIntensity: 0,
+      pressure,
+      pressureTrend: 'stable',
+      pressureTrendValue: 0,
+      dailyExtremes: {
+        tempMin: tMin ? parseFloat(tMin[1]) : temperature,
+        tempMinTime: tMin ? tMin[2] : '—',
+        tempMax: tMax ? parseFloat(tMax[1]) : temperature,
+        tempMaxTime: tMax ? tMax[2] : '—',
+        maxGust,
+        maxGustTime: gustDay ? gustDay[2] : gustToday ? gustToday[2] : '—',
+        dailyRain: 0,
+        maxRainIntensity: 0,
+      },
+    },
+    wind: {
+      direction: compass,
+      directionDegrees: COMPASS_DEG[compass] ?? 0,
+      speed: speedKmh,
+      beaufort: beaufortNum !== undefined ? parseInt(beaufortNum) : calc.scale,
+      beaufortDescription: beaufortDesc || calc.desc,
+      windChill,
+      feelsLike: null,
+      averages: { min10: avg(10), min15: avg(15), min30: avg(30), min60: avg(60) },
+      gusts: {
+        lastHour: gustLastHour ? parseFloat(gustLastHour[1]) : 0,
+        today: maxGust,
+        todayTime: gustToday ? gustToday[2] : gustDay ? gustDay[2] : '—',
+      },
+    },
+  };
+}
+
+async function fetchRosetta(id: string) {
+  try {
+    const [wx, wx4] = await Promise.all([
+      curlText(`${ROSETTA_BASE}/wx.html`),
+      curlText(`${ROSETTA_BASE}/wx4.html`),
+    ]);
+    return parseRosetta(wx, wx4, id);
+  } catch (e) {
+    console.error(`Error fetching Rosetta:`, e);
+    return { id, unreachable: true, error: String(e) };
+  }
+}
+
 async function fetchHtmlStation(config: typeof HTML_STATIONS[0]) {
+  if (config.id === 'rosetta') return fetchRosetta(config.id);
   try {
     const res = await fetch(`https://www.primierometeo.it/${config.slug}/`, {
       signal: AbortSignal.timeout(10000),
