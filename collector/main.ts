@@ -280,6 +280,17 @@ function trendFromGif(html: string, id: string): string {
   return t === 'rising' ? 'rising' : t === 'falling' ? 'falling' : 'stable';
 }
 
+// Minimo/massimo del giorno coerenti con la temperatura attuale
+// (dopo un riavvio della stazione i valori giornalieri possono essere parziali)
+function clampExtremes(temp: number, tMin: RegExpMatchArray | null, tMax: RegExpMatchArray | null, lastUpdate: string) {
+  const now = lastUpdate.match(/(\d{1,2}:\d{2})\s*$/)?.[1] ?? '—';
+  let min = tMin ? parseFloat(tMin[1]) : temp, minT = tMin ? tMin[2] : '—';
+  let max = tMax ? parseFloat(tMax[1]) : temp, maxT = tMax ? tMax[2] : '—';
+  if (min > temp) { min = temp; minT = now; }
+  if (max < temp) { max = temp; maxT = now; }
+  return { tempMin: min, tempMinTime: minT, tempMax: max, tempMaxTime: maxT };
+}
+
 function parsePrimieroHtml(html: string, id: string) {
   const lastUpdate = spanText(html, 'ajaxdate0') ?? '';
   const temperature = numIn(spanText(html, 'ajaxtemp'));
@@ -352,10 +363,7 @@ function parsePrimieroHtml(html: string, id: string) {
       pressureTrend: pTrend,
       pressureTrendValue: pArrow?.[2] ? parseFloat(pArrow[2]) : 0,
       dailyExtremes: {
-        tempMin: tMin ? parseFloat(tMin[1]) : temperature,
-        tempMinTime: tMin ? tMin[2] : '—',
-        tempMax: tMax ? parseFloat(tMax[1]) : temperature,
-        tempMaxTime: tMax ? tMax[2] : '—',
+        ...clampExtremes(temperature, tMin, tMax, lastUpdate),
         maxGust,
         maxGustTime: gustDay ? gustDay[2] : '—',
         dailyRain: rainDay ? parseFloat(rainDay[1]) : 0,
@@ -439,10 +447,7 @@ function parseRosetta(wx: string, wx4: string, id: string) {
       pressureTrend: 'stable',
       pressureTrendValue: 0,
       dailyExtremes: {
-        tempMin: tMin ? parseFloat(tMin[1]) : temperature,
-        tempMinTime: tMin ? tMin[2] : '—',
-        tempMax: tMax ? parseFloat(tMax[1]) : temperature,
-        tempMaxTime: tMax ? tMax[2] : '—',
+        ...clampExtremes(temperature, tMin, tMax, lastUpdate),
         maxGust,
         maxGustTime: gustDay ? gustDay[2] : gustToday ? gustToday[2] : '—',
         dailyRain: 0,
