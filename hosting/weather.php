@@ -6,7 +6,14 @@
  * La raccolta si rinnova da sola quando il file di cache ha più di CACHE_SECONDS secondi.
  */
 date_default_timezone_set('Europe/Rome');
-if (!defined('SWM_TEST') && is_file(__DIR__ . '/config.php')) require __DIR__ . '/config.php';
+$GLOBALS['swm_config_error'] = null;
+if (!defined('SWM_TEST')) {
+  if (isset($_GET['debug'])) { ini_set('display_errors', '1'); error_reporting(E_ALL); }
+  if (is_file(__DIR__ . '/config.php')) {
+    try { require __DIR__ . '/config.php'; }
+    catch (Throwable $e) { $GLOBALS['swm_config_error'] = 'config.php: ' . $e->getMessage() . ' (riga ' . $e->getLine() . ')'; }
+  }
+}
 if (!defined('WU_API_KEY')) define('WU_API_KEY', '');
 if (!defined('WU_STATION_ID')) define('WU_STATION_ID', 'IPRIMI4');
 if (!defined('CACHE_SECONDS')) define('CACHE_SECONDS', 180);
@@ -527,4 +534,22 @@ function main(): void {
   echo $body;
 }
 
-if (!defined('SWM_TEST')) main();
+if (!defined('SWM_TEST')) {
+  try {
+    if (isset($_GET['debug'])) {
+      header('Content-Type: text/plain; charset=utf-8');
+      echo 'PHP ' . PHP_VERSION . ' | curl ' . (function_exists('curl_multi_init') ? 'ok' : 'MANCA')
+        . ' | mbstring ' . (function_exists('mb_check_encoding') ? 'ok' : 'MANCA')
+        . ' | config.php ' . (is_file(__DIR__ . '/config.php') ? 'presente' : 'ASSENTE')
+        . ' | chiave WU ' . (WU_API_KEY !== '' && WU_API_KEY !== 'METTI_QUI_LA_CHIAVE' ? 'impostata' : 'NON impostata')
+        . ' | cartella scrivibile ' . (is_writable(__DIR__) ? 'si' : 'NO') . "\n";
+      if ($GLOBALS['swm_config_error']) echo 'ERRORE ' . $GLOBALS['swm_config_error'] . "\n";
+      exit;
+    }
+    main();
+  } catch (Throwable $e) {
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['success' => false, 'error' => $e->getMessage() . ' @' . basename($e->getFile()) . ':' . $e->getLine()]);
+  }
+}
