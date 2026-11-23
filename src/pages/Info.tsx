@@ -57,9 +57,15 @@ const Info = () => (
           <span><strong>Rossa - elevata</strong>: fenomeni intensi e diffusi, con rischio elevato per persone e cose.</span>
         </li>
       </ul>
+      <p>
+        Il badge "Allerta" in alto legge in automatico la pagina del sistema di allerta provinciale di MeteoTrentino, ogni
+        pochi minuti. Se non c'è nessuna allerta in corso mostra "Nessuna allerta" (passando il mouse vedi l'ultima
+        allerta dell'archivio); se c'è, diventa giallo, arancione o rosso e, cliccandolo, mostra il testo e il PDF ufficiale.
+        Se la pagina non è raggiungibile compare "Allerta non disponibile": in quel caso controlla direttamente il sito ufficiale.
+      </p>
       <p className="rounded-md border border-yellow-500/40 bg-yellow-500/10 p-3 text-xs">
-        <strong>Nota:</strong> al momento il badge "Allerta" di questo sito viene aggiornato a mano e non è ancora collegato
-        in automatico al bollettino. Per decisioni che riguardano la sicurezza fa fede sempre il sito ufficiale.
+        <strong>Nota:</strong> il sito riporta quanto pubblicato da MeteoTrentino, con qualche minuto di ritardo possibile.
+        Per decisioni che riguardano la sicurezza fa fede sempre il bollettino ufficiale.
       </p>
     </Section>
 

@@ -34,7 +34,7 @@ const SOURCES: { name: string; url: string; what: string }[] = [
   {
     name: 'Protezione civile della Provincia autonoma di Trento',
     url: 'https://avvisi.protezionecivile.tn.it/',
-    what: 'Allerte meteo ufficiali (vedi la pagina Info).',
+    what: 'Allerte meteo ufficiali, lette dalla pagina del sistema di allerta provinciale di MeteoTrentino (vedi la pagina Info).',
   },
   {
     name: 'VRealCam e altri fornitori di webcam',

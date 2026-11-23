@@ -457,6 +457,79 @@ function parse_snow(string $json, array $c): array {
   ];
 }
 
+// ─── Allerta meteo provinciale (pagina di MeteoTrentino) ───
+const ALERT_PAGE = 'https://www.meteotrentino.it/contatti-e-informazioni/sistema-di-allerta-provinciale/';
+
+function html_to_text(string $s): string {
+  $s = preg_replace('~<br\s*/?>~i', "\n", $s);
+  $s = preg_replace('~</(td|th)>~i', ' ', $s); // celle di tabella separate da uno spazio
+  $s = strip_tags($s);
+  $s = html_entity_decode($s, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+  $s = preg_replace('~[ \t\x{00A0}]+~u', ' ', $s);
+  $s = preg_replace('~\n\s*\n+~', "\n", $s);
+  return trim($s);
+}
+
+function alert_level_in(string $s): ?string {
+  return preg_match('~\b(gialla|arancione|rossa)\b~iu', $s, $m) ? strtolower($m[1]) : null;
+}
+
+function alert_abs_url(string $href): string {
+  if (preg_match('~^https?:~i', $href)) return $href;
+  return $href !== '' && $href[0] === '/' ? 'https://www.meteotrentino.it' . $href : ALERT_PAGE . $href;
+}
+
+function alert_iso_date(string $s): ?string {
+  if (preg_match('~(\d{4})-(\d{2})-(\d{2})~', $s, $m)) return "{$m[1]}-{$m[2]}-{$m[3]}";
+  if (preg_match('~(\d{1,2})/(\d{1,2})/(\d{4})~', $s, $m)) return sprintf('%s-%02d-%02d', $m[3], $m[2], $m[1]);
+  return null;
+}
+
+function parse_alert_page(string $html): array {
+  if (!preg_match('~<h2[^>]*>\s*Allerte attive\s*</h2>([\s\S]*?)<h2[^>]*>\s*Archivio allerte~iu', $html, $sm)) {
+    throw new RuntimeException('Struttura della pagina allerte non riconosciuta');
+  }
+  $section = $sm[1];
+
+  // Voce più recente dell'archivio
+  $last = null;
+  $tbody = preg_match('~Archivio allerte[\s\S]*?<tbody[^>]*>([\s\S]*?)</tbody>~iu', $html, $tm) ? $tm[1] : '';
+  if (preg_match_all('~<tr[\s\S]*?</tr>~i', $tbody, $rows)) {
+    foreach ($rows[0] as $row) {
+      $text = html_to_text($row);
+      $date = alert_iso_date($text);
+      if (!$date) continue;
+      if (!$last || $date > $last['date']) {
+        $href = preg_match('~href=["\']([^"\']+\.pdf[^"\']*)["\']~i', $row, $hm) ? $hm[1] : null;
+        $last = ['date' => $date, 'level' => alert_level_in($text), 'pdfUrl' => $href ? alert_abs_url($href) : null];
+      }
+    }
+  }
+
+  if (preg_match('~Nessuna\s+allerta\s+in\s+corso~iu', $section)) {
+    return ['status' => 'ok', 'active' => false, 'level' => null, 'title' => '', 'text' => '', 'dateFrom' => '', 'dateTo' => '',
+            'pdfUrl' => null, 'sourceUrl' => ALERT_PAGE, 'last' => $last];
+  }
+
+  $title = preg_match('~<h4[^>]*>([\s\S]*?)</h4>~i', $section, $hm) ? html_to_text($hm[1]) : '';
+  $paras = [];
+  if (preg_match_all('~<p[^>]*>[\s\S]*?</p>~i', $section, $pm)) {
+    foreach ($pm[0] as $p) { $t = html_to_text($p); if ($t !== '') $paras[] = $t; }
+  }
+  $plain = html_to_text($section);
+  $range = preg_match('~dal\s+(\d{1,2}/\d{1,2}(?:/\d{2,4})?)\s+al\s+(\d{1,2}/\d{1,2}(?:/\d{2,4})?)~iu', $plain, $rm) ? $rm : null;
+  $href = preg_match('~href=["\']([^"\']+\.pdf[^"\']*)["\']~i', $section, $hm2) ? $hm2[1] : null;
+  return [
+    'status' => 'ok', 'active' => true,
+    'level' => alert_level_in($title) ?? alert_level_in($plain) ?? ($last['level'] ?? null) ?? 'gialla',
+    'title' => $title !== '' ? $title : 'Allerta in corso',
+    'text' => implode("\n", $paras),
+    'dateFrom' => $range[1] ?? '', 'dateTo' => $range[2] ?? '',
+    'pdfUrl' => $href ? alert_abs_url($href) : ($last['pdfUrl'] ?? null),
+    'sourceUrl' => ALERT_PAGE, 'last' => $last,
+  ];
+}
+
 // ─── Raccolta ───
 function collect(): array {
   @set_time_limit(90);
@@ -469,6 +542,7 @@ function collect(): array {
   foreach (HYDROMETERS as $c) $urls['hy:' . $c['id']] = "https://www.floods.it/api/v1/monitoring/{$c['sensorId']}.json";
   $season = snow_season();
   foreach (SNOW_STATIONS as $c) $urls['sn:' . $c['id']] = "https://dati.meteotrentino.it/service.asmx/rilieviNeveStagionaliUnaStazioneValangheJson?stagione=$season&camponeve={$c['campo']}";
+  $urls['alert'] = ALERT_PAGE;
   if (WU_API_KEY !== '') $urls['wu'] = 'https://api.weather.com/v2/pws/observations/current?stationId=' . urlencode(WU_STATION_ID) . '&format=json&units=m&apiKey=' . urlencode(WU_API_KEY);
 
   $r = fetch_all($urls);
@@ -491,10 +565,13 @@ function collect(): array {
   $hy = []; foreach (HYDROMETERS as $c) $hy[] = $safe($c['id'], fn() => parse_hydro(body_of($r['hy:' . $c['id']]), $c));
   $sn = []; foreach (SNOW_STATIONS as $c) $sn[] = $safe($c['id'], fn() => parse_snow(body_of($r['sn:' . $c['id']]), $c));
 
+  $alert = $safe('alert', fn() => parse_alert_page(to_utf8(body_of($r['alert']))));
+  if (!empty($alert['unreachable'])) $alert = ['status' => 'unavailable', 'active' => false, 'level' => null, 'error' => $alert['error'] ?? '', 'sourceUrl' => ALERT_PAGE];
+
   return [
     'success' => true, 'timestamp' => gmdate('c'),
     'stations' => array_merge($html, $xml, [$wu]),
-    'hydrometers' => $hy, 'snowStations' => $sn,
+    'hydrometers' => $hy, 'snowStations' => $sn, 'alert' => $alert,
   ];
 }
 

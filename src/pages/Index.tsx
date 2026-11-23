@@ -26,7 +26,6 @@ import { AlertBanner } from '@/components/dashboard/WindAlertBanner';
 import { StationsSummary } from '@/components/dashboard/StationsSummary';
 import { WebcamsSection } from '@/components/dashboard/WebcamsSection';
 import { WebcamCard } from '@/components/dashboard/WebcamCard';
-import { mockAlert } from '@/data/mockAlert';
 import { stationWebcams } from '@/data/mockWebcams';
 import { generateWindAlerts, generateHydroAlerts, StationAlert } from '@/lib/windAlerts';
 import { notifyNewAlerts } from '@/lib/notifications';
@@ -121,7 +120,7 @@ const Index = () => {
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
             <InstallButton />
-            <AlertBadge alert={mockAlert} />
+            <AlertBadge alert={liveData?.alert} loading={isLiveLoading} />
             <AlertsBell alerts={allAlerts} onSelectStation={handleSelectStation} />
             <button
               onClick={() => {

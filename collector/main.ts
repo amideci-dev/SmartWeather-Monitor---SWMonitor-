@@ -684,6 +684,90 @@ async function fetchSnowStation(config: typeof SNOW_STATIONS[0]) {
   }
 }
 
+// ─── Allerta meteo provinciale (pagina di MeteoTrentino) ───
+const ALERT_PAGE = 'https://www.meteotrentino.it/contatti-e-informazioni/sistema-di-allerta-provinciale/';
+
+function htmlToText(s: string): string {
+  const named: Record<string, string> = {
+    nbsp: ' ', amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', deg: '°',
+    agrave: 'à', egrave: 'è', eacute: 'é', igrave: 'ì', ograve: 'ò', ugrave: 'ù',
+    Agrave: 'À', Egrave: 'È', Eacute: 'É', rsquo: '’', lsquo: '‘', ndash: '–', mdash: '—',
+  };
+  return s
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(td|th)>/gi, ' ') // celle di tabella separate da uno spazio
+    .replace(/<[^>]*>/g, '')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&([a-zA-Z]+);/g, (m, n) => named[n] ?? m)
+    .replace(/[ \t ]+/g, ' ')
+    .replace(/\n\s*\n+/g, '\n')
+    .trim();
+}
+
+type AlertLevelName = 'gialla' | 'arancione' | 'rossa';
+const levelIn = (s: string): AlertLevelName | null => {
+  const m = s.match(/\b(gialla|arancione|rossa)\b/i);
+  return m ? (m[1].toLowerCase() as AlertLevelName) : null;
+};
+const absoluteUrl = (href: string) => (/^https?:/i.test(href) ? href : new URL(href, ALERT_PAGE).toString());
+
+function toIsoDate(s: string): string | null {
+  const a = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (a) return `${a[1]}-${a[2]}-${a[3]}`;
+  const b = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  return b ? `${b[3]}-${b[2].padStart(2, '0')}-${b[1].padStart(2, '0')}` : null;
+}
+
+/** Legge la pagina del sistema di allerta provinciale: allerte attive e voce più recente dell'archivio. */
+function parseAlertPage(html: string) {
+  const section = html.match(/<h2[^>]*>\s*Allerte attive\s*<\/h2>([\s\S]*?)<h2[^>]*>\s*Archivio allerte/i)?.[1];
+  if (section === undefined) throw new Error('Struttura della pagina allerte non riconosciuta');
+
+  // Ultima voce dell'archivio (la più recente per data)
+  let last: { date: string; level: AlertLevelName | null; pdfUrl: string | null } | null = null;
+  const tbody = html.match(/Archivio allerte[\s\S]*?<tbody[^>]*>([\s\S]*?)<\/tbody>/i)?.[1] ?? '';
+  for (const row of tbody.match(/<tr[\s\S]*?<\/tr>/gi) ?? []) {
+    const date = toIsoDate(htmlToText(row));
+    if (!date) continue;
+    if (!last || date > last.date) {
+      const href = row.match(/href=["']([^"']+\.pdf[^"']*)["']/i)?.[1];
+      last = { date, level: levelIn(htmlToText(row)), pdfUrl: href ? absoluteUrl(href) : null };
+    }
+  }
+
+  if (/Nessuna\s+allerta\s+in\s+corso/i.test(section)) {
+    return { status: 'ok', active: false, level: null, title: '', text: '', dateFrom: '', dateTo: '', pdfUrl: null, sourceUrl: ALERT_PAGE, last };
+  }
+
+  // C'è un'allerta in corso: titolo nell'<h4>, descrizione nei paragrafi, PDF nel primo link .pdf
+  const title = htmlToText((section.match(/<h4[^>]*>([\s\S]*?)<\/h4>/i)?.[1]) ?? '');
+  const paragraphs = (section.match(/<p[^>]*>[\s\S]*?<\/p>/gi) ?? []).map(htmlToText).filter(Boolean);
+  const plain = htmlToText(section);
+  const range = plain.match(/dal\s+(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)\s+al\s+(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)/i);
+  const href = section.match(/href=["']([^"']+\.pdf[^"']*)["']/i)?.[1];
+  return {
+    status: 'ok',
+    active: true,
+    level: levelIn(title) ?? levelIn(plain) ?? last?.level ?? 'gialla',
+    title: title || 'Allerta in corso',
+    text: paragraphs.join('\n'),
+    dateFrom: range?.[1] ?? '',
+    dateTo: range?.[2] ?? '',
+    pdfUrl: href ? absoluteUrl(href) : last?.pdfUrl ?? null,
+    sourceUrl: ALERT_PAGE,
+    last,
+  };
+}
+
+async function fetchAlert() {
+  try {
+    return parseAlertPage(await curlText(ALERT_PAGE));
+  } catch (e) {
+    console.error('Error fetching alert page:', e);
+    return { status: 'unavailable', active: false, level: null, error: String(e), sourceUrl: ALERT_PAGE };
+  }
+}
+
 // ─── Collector con cache ───
 async function collect() {
   // XML stations sequentially (come nell'originale) per non stressare MeteoTrentino
@@ -691,11 +775,12 @@ async function collect() {
   for (const station of XML_STATIONS) {
     xmlResults.push(await fetchXmlStation(station));
   }
-  const [htmlResults, wuResult, hydroResults, snowResults] = await Promise.all([
+  const [htmlResults, wuResult, hydroResults, snowResults, alertResult] = await Promise.all([
     Promise.all(HTML_STATIONS.map(fetchHtmlStation)),
     fetchWunderground(),
     Promise.all(HYDROMETERS.map(fetchHydrometer)),
     Promise.all(SNOW_STATIONS.map(fetchSnowStation)),
+    fetchAlert(),
   ]);
   return {
     success: true,
@@ -703,6 +788,7 @@ async function collect() {
     stations: [...htmlResults, ...xmlResults, wuResult],
     hydrometers: hydroResults,
     snowStations: snowResults,
+    alert: alertResult,
   };
 }
 
