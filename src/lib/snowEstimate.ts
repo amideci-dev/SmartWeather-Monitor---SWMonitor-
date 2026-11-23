@@ -98,15 +98,28 @@ export function buildSnowEstimate(
 }
 
 export function isSnowDepthFresh(lastUpdate: string, now = new Date(), maxHours = 6) {
-  const match = lastUpdate.match(/(\d{2})\/(\d{2})\/(\d{4})\s+ore\s+(\d{1,2}):(\d{2})/);
-  if (!match) return false;
-  const update = new Date(
-    Number(match[3]),
-    Number(match[2]) - 1,
-    Number(match[1]),
-    Number(match[4]),
-    Number(match[5]),
-  );
-  const age = now.getTime() - update.getTime();
-  return age >= 0 && age <= maxHours * 60 * 60 * 1000;
+  // Con ora ("21/11/2026 ore 15:00"): vale se ha al massimo maxHours ore.
+  const withTime = lastUpdate.match(/(\d{2})\/(\d{2})\/(\d{4})\s+ore\s+(\d{1,2}):(\d{2})/);
+  if (withTime) {
+    const update = new Date(
+      Number(withTime[3]),
+      Number(withTime[2]) - 1,
+      Number(withTime[1]),
+      Number(withTime[4]),
+      Number(withTime[5]),
+    );
+    const age = now.getTime() - update.getTime();
+    return age >= 0 && age <= maxHours * 60 * 60 * 1000;
+  }
+
+  // Solo data ("23/11/2026"): i rilievi dei campi neve sono giornalieri, quindi vale se è la data di oggi.
+  const dateOnly = lastUpdate.match(/^\s*(\d{2})\/(\d{2})\/(\d{4})\s*$/);
+  if (dateOnly) {
+    return (
+      Number(dateOnly[3]) === now.getFullYear() &&
+      Number(dateOnly[2]) === now.getMonth() + 1 &&
+      Number(dateOnly[1]) === now.getDate()
+    );
+  }
+  return false;
 }

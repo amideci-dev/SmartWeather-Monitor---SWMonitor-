@@ -39,4 +39,11 @@ describe('snow accumulation estimate', () => {
     expect(isSnowDepthFresh('21/11/2026 ore 11:59', now)).toBe(false);
     expect(isSnowDepthFresh('30/03/2026 ore 22:30', now)).toBe(false);
   });
+
+  it('treats a date-only daily reading as recent only on the same day', () => {
+    const now = new Date(2026, 10, 23, 18, 0);
+    expect(isSnowDepthFresh('23/11/2026', now)).toBe(true);
+    expect(isSnowDepthFresh('22/11/2026', now)).toBe(false);
+    expect(isSnowDepthFresh('', now)).toBe(false);
+  });
 });
