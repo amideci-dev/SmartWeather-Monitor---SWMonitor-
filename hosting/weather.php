@@ -296,7 +296,7 @@ function parse_primiero(string $html, string $id): array {
       'perceivedTemp' => numIn(spanText($html, 'ajaxapparenttemp')),
       'wetBulb' => numIn(spanText($html, 'ajaxwetbulb')),
       'rainIntensity' => numIn(spanText($html, 'ajaxrainratehr0')) ?? 0,
-      'pressure' => $pBaro ? (float)$pBaro[1] : null,
+      'pressure' => ($pBaro && (float)$pBaro[1] > 0) ? (float)$pBaro[1] : null, // 0 = barometro assente
       'pressureTrend' => $pTrend, 'pressureTrendValue' => isset($pArrow[2]) && $pArrow[2] !== '' ? (float)$pArrow[2] : 0,
       'dailyExtremes' => clampExtremes($temperature, $tMin, $tMax, $lastUpdate) + [
         'maxGust' => $maxGust, 'maxGustTime' => $gustDay ? $gustDay[2] : '—',
@@ -499,6 +499,7 @@ function collect(): array {
 }
 
 function encode(array $d): string {
+  ini_set('serialize_precision', '-1'); // numeri brevi (alcuni hosting usano 17 cifre)
   return json_encode($d, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE | JSON_PARTIAL_OUTPUT_ON_ERROR);
 }
 

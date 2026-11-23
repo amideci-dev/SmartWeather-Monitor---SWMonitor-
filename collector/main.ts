@@ -359,7 +359,7 @@ function parsePrimieroHtml(html: string, id: string) {
       perceivedTemp: numIn(spanText(html, 'ajaxapparenttemp')),
       wetBulb: numIn(spanText(html, 'ajaxwetbulb')),
       rainIntensity: numIn(spanText(html, 'ajaxrainratehr0')) ?? 0,
-      pressure: pBaro ? parseFloat(pBaro[1]) : null,
+      pressure: pBaro && parseFloat(pBaro[1]) > 0 ? parseFloat(pBaro[1]) : null, // 0 = barometro assente
       pressureTrend: pTrend,
       pressureTrendValue: pArrow?.[2] ? parseFloat(pArrow[2]) : 0,
       dailyExtremes: {
