@@ -57,8 +57,28 @@ function to_utf8(string $s): string {
   return mb_check_encoding($s, 'UTF-8') ? $s : mb_convert_encoding($s, 'UTF-8', 'Windows-1252');
 }
 
-/** Scarica più URL in parallelo. Ritorna chiave => [body, code, err]. */
+/** Scarica un URL alla volta (alcuni hosting, come InfinityFree, disattivano curl_multi). */
+function fetch_sequential(array $urls): array {
+  $out = [];
+  $t0 = microtime(true);
+  foreach ($urls as $k => $u) {
+    if (microtime(true) - $t0 > 40) { $out[$k] = ['body' => '', 'code' => 0, 'err' => 'tempo massimo raccolta superato']; continue; }
+    $ch = curl_init($u);
+    curl_setopt_array($ch, [
+      CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_MAXREDIRS => 4,
+      CURLOPT_TIMEOUT => 8, CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_ENCODING => '',
+      CURLOPT_USERAGENT => 'Mozilla/5.0 (compatible; WeatherDashboard/1.0)',
+    ]);
+    $body = curl_exec($ch);
+    $out[$k] = ['body' => $body === false ? '' : (string)$body, 'code' => (int)curl_getinfo($ch, CURLINFO_HTTP_CODE), 'err' => curl_error($ch)];
+    curl_close($ch);
+  }
+  return $out;
+}
+
+/** Scarica più URL in parallelo se possibile. Ritorna chiave => [body, code, err]. */
 function fetch_all(array $urls): array {
+  if (!function_exists('curl_multi_init') || !function_exists('curl_multi_exec')) return fetch_sequential($urls);
   $mh = curl_multi_init();
   $hs = [];
   foreach ($urls as $k => $u) {
@@ -439,6 +459,7 @@ function parse_snow(string $json, array $c): array {
 
 // ─── Raccolta ───
 function collect(): array {
+  @set_time_limit(90);
   $urls = [];
   foreach (XML_STATIONS as $c) $urls['xml:' . $c['id']] = "https://dati.meteotrentino.it/service.asmx/ultimiDatiStazione?codice={$c['code']}";
   foreach (HTML_STATIONS as $c) {
