@@ -32,6 +32,11 @@ const SOURCES: { name: string; url: string; what: string }[] = [
     what: 'Previsioni dei modelli ensemble e deterministici, usate per le curve di temperatura, le precipitazioni, la sintesi giornaliera e la stima della neve fresca.',
   },
   {
+    name: 'meteo.report (Meteotrentino · open data Provincia autonoma di Trento)',
+    url: 'https://meteo.report',
+    what: 'Previsione ufficiale locale per San Martino di Castrozza e Passo Rolle: zero termico, quota neve, neve fresca, vento e stato del cielo.',
+  },
+  {
     name: 'Protezione civile della Provincia autonoma di Trento',
     url: 'https://avvisi.protezionecivile.tn.it/',
     what: 'Allerte meteo ufficiali, lette dalla pagina del sistema di allerta provinciale di MeteoTrentino (vedi la pagina Info).',

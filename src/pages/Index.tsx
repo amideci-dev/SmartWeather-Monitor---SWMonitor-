@@ -47,6 +47,7 @@ const FORECAST_NAV_ITEMS = [
   { id: 'sintesi', label: 'Sintesi giornaliera', icon: '🗓️' },
   { id: 'ensemble', label: 'Previsioni ensemble', icon: '📈' },
   { id: 'neve-fresca', label: 'Accumulo neve fresca', icon: '❄️' },
+  { id: 'ufficiale', label: 'Previsione ufficiale', icon: '🏔️' },
 ];
 
 const Index = () => {
@@ -404,7 +405,7 @@ const Index = () => {
       </div>
       ) : (
         <main className="flex-1 overflow-y-auto">
-          <ForecastDashboard snowStations={snowStations} />
+          <ForecastDashboard snowStations={snowStations} localForecasts={liveData?.localForecasts} localLoading={isLiveLoading} />
         </main>
       )}
 

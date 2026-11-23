@@ -530,6 +530,66 @@ function parse_alert_page(string $html): array {
   ];
 }
 
+// ─── Previsioni locali ufficiali (meteo.report, dato aperto PAT) ───
+const LOCAL_FORECASTS = [
+  ['id' => 'san-martino', 'name' => 'San Martino di Castrozza', 'elevation' => 1487, 'file' => '4c6eaca3-6537-4f5b-80bf-ff5f792b84c7'],
+  ['id' => 'passo-rolle', 'name' => 'Passo Rolle', 'elevation' => 1985, 'file' => '3a541c02-d2f4-4eb6-b300-88ae21a009be'],
+];
+
+function fc_num($v): ?float {
+  if ($v === null || $v === '' || !is_numeric($v)) return null;
+  $n = (float)$v;
+  return is_finite($n) ? $n : null;
+}
+
+/** start naive + minuti → stringa naive (ore locali, nessun fuso) */
+function fc_add_minutes(string $start, int $minutes): string {
+  $d = new DateTime($start, new DateTimeZone('UTC'));
+  $d->modify(($minutes >= 0 ? '+' : '') . $minutes . ' minutes');
+  return $d->format('Y-m-d\TH:i:s');
+}
+
+function fc_block($obj, string $prefix, string $start): array {
+  if (!is_array($obj)) return [];
+  $rows = [];
+  foreach ($obj as $k => $v) {
+    $k = (string)$k;
+    if (strpos($k, $prefix) !== 0 || !is_array($v)) continue;
+    $off = substr($k, strlen($prefix));
+    if ($off === '' || !ctype_digit($off)) continue;
+    $rows[] = [(int)$off, $v];
+  }
+  usort($rows, fn($a, $b) => $a[0] <=> $b[0]);
+  return array_map(fn($r) => ['t' => fc_add_minutes($start, $r[0]), 'v' => $r[1]], $rows);
+}
+
+function parse_local_forecast(string $text, array $cfg): array {
+  $j = json_decode($text, true);
+  if (!is_array($j)) throw new RuntimeException('Previsione locale: JSON non valido');
+  $start = (string)($j['start'] ?? '');
+  if (!preg_match('~^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$~', $start)) throw new RuntimeException('Previsione locale: formato data non riconosciuto');
+  $common = function (array $v): array {
+    $sky = $v['sky_condition'] ?? null;
+    return [
+      'rain' => fc_num($v['rain_fall'] ?? null), 'rainProb' => fc_num($v['rain_probability'] ?? null),
+      'freshSnow' => fc_num($v['fresh_snow'] ?? null), 'snowLevel' => fc_num($v['snow_level'] ?? null),
+      'freezingLevel' => fc_num($v['freezing_level'] ?? null),
+      'windSpeed' => fc_num($v['wind_speed'] ?? null), 'windGust' => fc_num($v['wind_gust'] ?? null),
+      'sky' => is_string($sky) && $sky !== '' ? strtolower($sky) : null,
+      'sun' => fc_num($v['sunshine_duration'] ?? null),
+    ];
+  };
+  $hourly = array_map(fn($r) => array_merge(
+    ['t' => $r['t'], 'temp' => fc_num($r['v']['temperature'] ?? null), 'windDir' => fc_num($r['v']['wind_direction'] ?? null)],
+    $common($r['v'])), fc_block($j['180'] ?? null, '180', $start));
+  $daily = array_map(fn($r) => array_merge(
+    ['date' => substr($r['t'], 0, 10), 'tMin' => fc_num($r['v']['temperature_minimum'] ?? null), 'tMax' => fc_num($r['v']['temperature_maximum'] ?? null)],
+    $common($r['v'])), fc_block($j['1440'] ?? null, '1440', $start));
+  if (!$hourly && !$daily) throw new RuntimeException('Previsione locale vuota');
+  return ['id' => $cfg['id'], 'name' => $cfg['name'], 'elevation' => $cfg['elevation'], 'start' => $start,
+          'end' => (string)($j['end'] ?? ''), 'hourly' => $hourly, 'daily' => $daily];
+}
+
 // ─── Raccolta ───
 function collect(): array {
   @set_time_limit(90);
@@ -543,6 +603,7 @@ function collect(): array {
   $season = snow_season();
   foreach (SNOW_STATIONS as $c) $urls['sn:' . $c['id']] = "https://dati.meteotrentino.it/service.asmx/rilieviNeveStagionaliUnaStazioneValangheJson?stagione=$season&camponeve={$c['campo']}";
   $urls['alert'] = ALERT_PAGE;
+  foreach (LOCAL_FORECASTS as $c) $urls['fc:' . $c['id']] = 'https://meteo.report/var/data/forecasts/' . $c['file'] . '.json';
   if (WU_API_KEY !== '') $urls['wu'] = 'https://api.weather.com/v2/pws/observations/current?stationId=' . urlencode(WU_STATION_ID) . '&format=json&units=m&apiKey=' . urlencode(WU_API_KEY);
 
   $r = fetch_all($urls);
@@ -568,10 +629,12 @@ function collect(): array {
   $alert = $safe('alert', fn() => parse_alert_page(to_utf8(body_of($r['alert']))));
   if (!empty($alert['unreachable'])) $alert = ['status' => 'unavailable', 'active' => false, 'level' => null, 'error' => $alert['error'] ?? '', 'sourceUrl' => ALERT_PAGE];
 
+  $fc = []; foreach (LOCAL_FORECASTS as $c) $fc[] = $safe($c['id'], fn() => parse_local_forecast(body_of($r['fc:' . $c['id']]), $c));
+
   return [
     'success' => true, 'timestamp' => gmdate('c'),
     'stations' => array_merge($html, $xml, [$wu]),
-    'hydrometers' => $hy, 'snowStations' => $sn, 'alert' => $alert,
+    'hydrometers' => $hy, 'snowStations' => $sn, 'alert' => $alert, 'localForecasts' => $fc,
   ];
 }
 

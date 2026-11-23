@@ -768,6 +768,70 @@ async function fetchAlert() {
   }
 }
 
+// ─── Previsioni locali ufficiali (meteo.report, dato aperto PAT) ───
+const LOCAL_FORECASTS = [
+  { id: 'san-martino', name: 'San Martino di Castrozza', elevation: 1487, file: '4c6eaca3-6537-4f5b-80bf-ff5f792b84c7' },
+  { id: 'passo-rolle', name: 'Passo Rolle', elevation: 1985, file: '3a541c02-d2f4-4eb6-b300-88ae21a009be' },
+];
+const forecastUrl = (file: string) => `https://meteo.report/var/data/forecasts/${file}.json`;
+
+const fcNum = (v: unknown): number | null => {
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+
+/** start naive "2026-11-23T01:00:00" + offset in minuti → stringa naive (nessun fuso: sono ore locali) */
+function addMinutesNaive(start: string, minutes: number): string {
+  const d = new Date(start + 'Z');
+  d.setUTCMinutes(d.getUTCMinutes() + minutes);
+  return d.toISOString().slice(0, 19);
+}
+
+function fcBlock(obj: Record<string, Record<string, unknown>> | undefined, prefix: string, start: string) {
+  if (!obj) return [];
+  return Object.keys(obj)
+    .filter((k) => k.startsWith(prefix))
+    .map((k) => ({ offset: Number(k.slice(prefix.length)), v: obj[k] }))
+    .filter((x) => Number.isFinite(x.offset))
+    .sort((a, b) => a.offset - b.offset)
+    .map(({ offset, v }) => ({ t: addMinutesNaive(start, offset), v }));
+}
+
+function parseLocalForecast(text: string, cfg: { id: string; name: string; elevation: number }) {
+  const j = JSON.parse(text);
+  const start = String(j.start ?? '');
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(start)) throw new Error('Previsione locale: formato data non riconosciuto');
+  const common = (v: Record<string, unknown>) => ({
+    rain: fcNum(v.rain_fall),
+    rainProb: fcNum(v.rain_probability),
+    freshSnow: fcNum(v.fresh_snow),
+    snowLevel: fcNum(v.snow_level),
+    freezingLevel: fcNum(v.freezing_level),
+    windSpeed: fcNum(v.wind_speed),
+    windGust: fcNum(v.wind_gust),
+    sky: typeof v.sky_condition === 'string' && v.sky_condition ? v.sky_condition.toLowerCase() : null,
+    sun: fcNum(v.sunshine_duration),
+  });
+  const hourly = fcBlock(j['180'], '180', start).map(({ t, v }) => ({
+    t, temp: fcNum(v.temperature), windDir: fcNum(v.wind_direction), ...common(v),
+  }));
+  const daily = fcBlock(j['1440'], '1440', start).map(({ t, v }) => ({
+    date: t.slice(0, 10), tMin: fcNum(v.temperature_minimum), tMax: fcNum(v.temperature_maximum), ...common(v),
+  }));
+  if (!hourly.length && !daily.length) throw new Error('Previsione locale vuota');
+  return { id: cfg.id, name: cfg.name, elevation: cfg.elevation, start, end: String(j.end ?? ''), hourly, daily };
+}
+
+async function fetchLocalForecast(cfg: typeof LOCAL_FORECASTS[0]) {
+  try {
+    return parseLocalForecast(await curlText(forecastUrl(cfg.file), 15), cfg);
+  } catch (e) {
+    console.error(`Error fetching local forecast ${cfg.id}:`, e);
+    return { id: cfg.id, unreachable: true, error: String(e) };
+  }
+}
+
 // ─── Collector con cache ───
 async function collect() {
   // XML stations sequentially (come nell'originale) per non stressare MeteoTrentino
@@ -775,12 +839,13 @@ async function collect() {
   for (const station of XML_STATIONS) {
     xmlResults.push(await fetchXmlStation(station));
   }
-  const [htmlResults, wuResult, hydroResults, snowResults, alertResult] = await Promise.all([
+  const [htmlResults, wuResult, hydroResults, snowResults, alertResult, localForecasts] = await Promise.all([
     Promise.all(HTML_STATIONS.map(fetchHtmlStation)),
     fetchWunderground(),
     Promise.all(HYDROMETERS.map(fetchHydrometer)),
     Promise.all(SNOW_STATIONS.map(fetchSnowStation)),
     fetchAlert(),
+    Promise.all(LOCAL_FORECASTS.map(fetchLocalForecast)),
   ]);
   return {
     success: true,
@@ -789,6 +854,7 @@ async function collect() {
     hydrometers: hydroResults,
     snowStations: snowResults,
     alert: alertResult,
+    localForecasts,
   };
 }
 

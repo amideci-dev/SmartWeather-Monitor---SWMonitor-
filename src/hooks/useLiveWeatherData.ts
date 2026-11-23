@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { LiveAlert } from '@/data/mockAlert';
+import { LocalForecast } from '@/types/localForecast';
 
 interface LiveStationData {
   id: string;
@@ -19,6 +20,7 @@ interface LiveWeatherResponse {
   hydrometers: LiveStationData[];
   snowStations?: any[];
   alert?: LiveAlert;
+  localForecasts?: LocalForecast[];
 }
 
 async function fetchLiveData(): Promise<LiveWeatherResponse> {

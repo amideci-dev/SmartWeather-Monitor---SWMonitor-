@@ -23,8 +23,16 @@ import { SnowStation } from '@/types/weather';
 import { PrecipitationForecastChart, TemperatureSpaghettiChart } from './ForecastCharts';
 import { DailyForecastSection } from './DailyForecastSection';
 import { SnowAccumulationChart } from './SnowAccumulationChart';
+import { LocalForecastSection } from './LocalForecastSection';
+import { LocalForecast } from '@/types/localForecast';
 
-export function ForecastDashboard({ snowStations }: { snowStations: SnowStation[] }) {
+interface ForecastDashboardProps {
+  snowStations: SnowStation[];
+  localForecasts?: LocalForecast[];
+  localLoading?: boolean;
+}
+
+export function ForecastDashboard({ snowStations, localForecasts, localLoading = false }: ForecastDashboardProps) {
   const [locationId, setLocationId] = useState<ForecastLocationId>('san-martino');
   const [modelId, setModelId] = useState<ForecastModelId>('ecmwf_ifs025');
   const location = forecastLocations.find((item) => item.id === locationId)!;
@@ -180,15 +188,24 @@ export function ForecastDashboard({ snowStations }: { snowStations: SnowStation[
             <SnowAccumulationChart forecast={data} snowStation={snowStation} />
           </div>
 
-          <div className="flex flex-col gap-2 border-t pt-4 text-[11px] text-muted-foreground sm:flex-row sm:items-center">
-            <p>
-              Fonte dati: <a href="https://open-meteo.com/en/docs/ensemble-api" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">Open-Meteo <ExternalLink className="h-3 w-3" /></a>
-              {' '}· caricamento {new Intl.DateTimeFormat('it-IT', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Rome' }).format(new Date(data.fetchedAt))}
-            </p>
-            <p className="sm:ml-auto sm:text-right">Supporto operativo: non sostituisce i bollettini ufficiali di allerta.</p>
-          </div>
         </>
       )}
+
+      <div id="ufficiale" className="scroll-mt-4">
+        <LocalForecastSection
+          forecast={localForecasts?.find((item) => item.id === locationId)}
+          locationName={location.name}
+          loading={localLoading}
+        />
+      </div>
+
+      <div className="flex flex-col gap-2 border-t pt-4 text-[11px] text-muted-foreground sm:flex-row sm:items-center">
+        <p>
+          Fonte dati: <a href="https://open-meteo.com/en/docs/ensemble-api" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">Open-Meteo <ExternalLink className="h-3 w-3" /></a>
+          {data ? ` · caricamento ${new Intl.DateTimeFormat('it-IT', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Rome' }).format(new Date(data.fetchedAt))}` : ''}
+        </p>
+        <p className="sm:ml-auto sm:text-right">Supporto operativo: non sostituisce i bollettini ufficiali di allerta.</p>
+      </div>
     </div>
   );
 }
