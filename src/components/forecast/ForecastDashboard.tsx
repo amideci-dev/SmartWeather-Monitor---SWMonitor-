@@ -42,7 +42,7 @@ export function ForecastDashboard({ snowStations }: { snowStations: SnowStation[
         <div className="flex items-center gap-2">
           <CloudSun className="h-6 w-6 text-primary" />
           <div>
-            <h2 className="text-xl font-extrabold tracking-tight">Previsioni ensemble</h2>
+            <h2 className="text-xl font-extrabold tracking-tight">Previsioni</h2>
             <p className="text-xs text-muted-foreground">Scenari, fenomeni e temperature per le due aree operative</p>
           </div>
         </div>
@@ -103,7 +103,11 @@ export function ForecastDashboard({ snowStations }: { snowStations: SnowStation[
 
       {data && stats && !isLoading && !isError && (
         <>
-          <section className="space-y-4">
+          <div id="sintesi" className="scroll-mt-4">
+            <DailyForecastSection forecast={data} daily={daily} />
+          </div>
+
+          <section id="ensemble" className="scroll-mt-4 space-y-4">
             <div className="flex flex-wrap items-start gap-3">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -172,9 +176,9 @@ export function ForecastDashboard({ snowStations }: { snowStations: SnowStation[
             <PrecipitationForecastChart forecast={data} />
           </div>
 
-          <SnowAccumulationChart forecast={data} snowStation={snowStation} />
-
-          <DailyForecastSection forecast={data} daily={daily} />
+          <div id="neve-fresca" className="scroll-mt-4">
+            <SnowAccumulationChart forecast={data} snowStation={snowStation} />
+          </div>
 
           <div className="flex flex-col gap-2 border-t pt-4 text-[11px] text-muted-foreground sm:flex-row sm:items-center">
             <p>

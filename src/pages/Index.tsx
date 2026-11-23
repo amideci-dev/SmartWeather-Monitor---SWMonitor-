@@ -41,6 +41,12 @@ const SECTION_NAV_ITEMS = [
   { id: 'neve', label: 'Dati Neve', icon: '❄️' },
 ];
 
+const FORECAST_NAV_ITEMS = [
+  { id: 'sintesi', label: 'Sintesi giornaliera', icon: '🗓️' },
+  { id: 'ensemble', label: 'Previsioni ensemble', icon: '📈' },
+  { id: 'neve-fresca', label: 'Accumulo neve fresca', icon: '❄️' },
+];
+
 const Index = () => {
   const queryClient = useQueryClient();
   const [activeView, setActiveView] = useState<DashboardView>('situazione');
@@ -137,28 +143,26 @@ const Index = () => {
         </Tabs>
       </div>
 
-      {/* Section navigation — only in Situazione */}
-      {activeView === 'situazione' && (
-        <div className="shrink-0 border-b bg-card/60">
-          <nav className="flex items-center gap-1 overflow-x-auto px-4 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {SECTION_NAV_ITEMS.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveStation(null);
-                  setTimeout(() => {
-                    const el = document.getElementById(item.id);
-                    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }, 50);
-                }}
-                className="shrink-0 px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
-                {item.icon} {item.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-      )}
+      {/* Section navigation — Situazione e Previsioni */}
+      <div className="shrink-0 border-b bg-card/60">
+        <nav className="flex items-center gap-1 overflow-x-auto px-4 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {(activeView === 'situazione' ? SECTION_NAV_ITEMS : FORECAST_NAV_ITEMS).map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                if (activeView === 'situazione') setActiveStation(null);
+                setTimeout(() => {
+                  const el = document.getElementById(item.id);
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 50);
+              }}
+              className="shrink-0 px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              {item.icon} {item.label}
+            </button>
+          ))}
+        </nav>
+      </div>
 
       {/* Main layout: data (left) + map (right) */}
       {activeView === 'situazione' ? (
