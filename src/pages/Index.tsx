@@ -1,5 +1,6 @@
+import { InstallButton } from '@/components/dashboard/InstallButton';
 import { useState, useCallback, useMemo } from 'react';
-import { Flame, Radio, Waves, Mountain, LayoutGrid, Snowflake, Camera, RefreshCw, X, Activity, CloudSun } from 'lucide-react';
+import { Radio, Waves, Mountain, LayoutGrid, Snowflake, Camera, RefreshCw, X, Activity, CloudSun } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -88,12 +89,13 @@ const Index = () => {
       {/* Top bar */}
       <header className="sticky top-0 z-[120] border-b bg-card/80 backdrop-blur-md">
         <div className="flex h-14 items-center gap-3 px-4">
-          <Flame className="h-6 w-6 text-accent" />
+          <img src="/logo-mark.svg" alt="SWMonitor" className="h-9 w-9" />
           <h1 className="text-lg font-extrabold tracking-tight">
             <span className="text-primary">S</span>mart <span className="text-primary">W</span>eather <span className="text-primary">M</span>onitor
           </h1>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            <InstallButton />
             <AlertBadge alert={mockAlert} />
             <AlertsBell alerts={allAlerts} onSelectStation={handleSelectStation} />
             <button
