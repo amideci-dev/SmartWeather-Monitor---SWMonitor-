@@ -1,0 +1,20 @@
+{
+  "name": "Smart Weather Monitor",
+  "short_name": "SWMonitor",
+  "description": "Dashboard meteo, idrometri, neve, webcam e previsioni ensemble per San Martino di Castrozza e Passo Rolle.",
+  "lang": "it",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#EAF5FD",
+  "theme_color": "#2258C3",
+  "categories": ["weather", "utilities"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-rounded.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
