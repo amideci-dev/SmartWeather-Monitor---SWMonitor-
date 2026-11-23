@@ -1,8 +1,7 @@
 name: Pubblica su hosting FTP
 
 # Si avvia a ogni modifica di main (anche da Lovable) o a mano da "Actions" → "Run workflow".
-# Richiede i Secrets FTP_HOST, FTP_USER, FTP_PASS (e facoltativo FTP_DIR, default /htdocs/).
-# Se i Secrets non ci sono, non fa niente.
+# Richiede le credenziali FTP nei Secrets (vedi sotto). Se mancano, non fa niente.
 on:
   push:
     branches: [main]
@@ -16,15 +15,31 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Controlla i Secrets
+      - name: Leggi le credenziali FTP
         id: check
         env:
-          FTP_HOST: ${{ secrets.FTP_HOST }}
+          # Accetta o un solo segreto FTP_ACCESS con righe "FTP_HOST: ...", "FTP_USER: ...", "FTP_PASS: ...",
+          # oppure tre segreti separati FTP_HOST, FTP_USER, FTP_PASS.
+          ACCESS: ${{ secrets.FTP_ACCESS }}
+          S_HOST: ${{ secrets.FTP_HOST }}
+          S_USER: ${{ secrets.FTP_USER }}
+          S_PASS: ${{ secrets.FTP_PASS }}
+          S_DIR: ${{ secrets.FTP_DIR }}
         run: |
-          if [ -z "$FTP_HOST" ]; then
-            echo "Secrets FTP non configurati: salto la pubblicazione."
+          get() { printf '%s\n' "$ACCESS" | tr -d '\r' | sed -n "s/^[[:space:]]*$1[[:space:]]*[:=][[:space:]]*//p" | head -1 | sed 's/[[:space:]]*$//'; }
+          HOST="${S_HOST:-$(get FTP_HOST)}"
+          USER_="${S_USER:-$(get FTP_USER)}"
+          PASS_="${S_PASS:-$(get FTP_PASS)}"
+          DIR_="${S_DIR:-$(get FTP_DIR)}"
+          [ -z "$DIR_" ] && DIR_="/htdocs/"
+          if [ -z "$HOST" ] || [ -z "$USER_" ] || [ -z "$PASS_" ]; then
+            echo "Credenziali FTP incomplete (host/utente/password): salto la pubblicazione."
             echo "ready=false" >> "$GITHUB_OUTPUT"
           else
+            echo "::add-mask::$PASS_"
+            echo "::add-mask::$USER_"
+            { echo "FTP_H=$HOST"; echo "FTP_U=$USER_"; echo "FTP_P=$PASS_"; echo "FTP_D=$DIR_"; } >> "$GITHUB_ENV"
+            echo "Credenziali trovate per il server $HOST, cartella $DIR_"
             echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
 
@@ -47,10 +62,10 @@ jobs:
         if: steps.check.outputs.ready == 'true'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASS }}
+          server: ${{ env.FTP_H }}
+          username: ${{ env.FTP_U }}
+          password: ${{ env.FTP_P }}
           protocol: ftp
           port: 21
           local-dir: dist/
-          server-dir: ${{ secrets.FTP_DIR || '/htdocs/' }}
+          server-dir: ${{ env.FTP_D }}
