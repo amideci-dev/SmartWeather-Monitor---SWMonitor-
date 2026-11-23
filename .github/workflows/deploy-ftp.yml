@@ -1,0 +1,56 @@
+name: Pubblica su hosting FTP
+
+# Si avvia a ogni modifica di main (anche da Lovable) o a mano da "Actions" → "Run workflow".
+# Richiede i Secrets FTP_HOST, FTP_USER, FTP_PASS (e facoltativo FTP_DIR, default /htdocs/).
+# Se i Secrets non ci sono, non fa niente.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-ftp
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Controlla i Secrets
+        id: check
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+        run: |
+          if [ -z "$FTP_HOST" ]; then
+            echo "Secrets FTP non configurati: salto la pubblicazione."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.check.outputs.ready == 'true'
+
+      - uses: oven-sh/setup-bun@v2
+        if: steps.check.outputs.ready == 'true'
+
+      - name: Compila il sito
+        if: steps.check.outputs.ready == 'true'
+        env:
+          VITE_API_URL: /weather.php
+        run: |
+          bun install
+          bun run build
+          cp hosting/weather.php dist/weather.php
+
+      - name: Carica via FTP
+        if: steps.check.outputs.ready == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftp
+          port: 21
+          local-dir: dist/
+          server-dir: ${{ secrets.FTP_DIR || '/htdocs/' }}
