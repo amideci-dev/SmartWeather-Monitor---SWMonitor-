@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Camera, ExternalLink, Maximize2, RefreshCw, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,18 @@ interface WebcamCardProps {
 export function WebcamCard({ webcam, onSelectStation }: WebcamCardProps) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
-  const imgSrc = `${webcam.url}${webcam.url.includes('?') ? '&' : '?'}t=${refreshKey}`;
+  // L'immagine viene richiesta di nuovo quando scade il suo periodo (1 h per le webcam orarie, 5 min per le altre),
+  // così il browser non resta fermo su una copia vecchia.
+  const periodMs = (webcam.refreshMinutes ?? 5) * 60_000;
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  const bucket = Math.floor(now / periodMs);
+  const cacheKey = `${bucket}-${refreshKey}`;
+  const imgSrc = `${webcam.url}${webcam.url.includes('?') ? '&' : '?'}t=${cacheKey}`;
   const externalHref = webcam.externalUrl || webcam.url;
 
   return (
@@ -28,7 +38,11 @@ export function WebcamCard({ webcam, onSelectStation }: WebcamCardProps) {
             src={imgSrc}
             alt={webcam.name}
             className="h-full w-full object-cover"
+            referrerPolicy="no-referrer"
             loading="lazy"
+            onLoad={(e) => {
+              (e.target as HTMLImageElement).style.display = '';
+            }}
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
@@ -79,7 +93,12 @@ export function WebcamCard({ webcam, onSelectStation }: WebcamCardProps) {
         <CardContent className="p-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Camera className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">{webcam.name}</span>
+            <div className="min-w-0">
+              <span className="block truncate text-sm font-medium">{webcam.name}</span>
+              {(webcam.refreshMinutes ?? 5) >= 60 && (
+                <span className="block text-[10px] text-muted-foreground">Immagine aggiornata ogni ora</span>
+              )}
+            </div>
           </div>
           {webcam.stationId && onSelectStation && (
             <Button
@@ -100,7 +119,8 @@ export function WebcamCard({ webcam, onSelectStation }: WebcamCardProps) {
           <DialogTitle className="sr-only">{webcam.name}</DialogTitle>
           <div className="relative">
             <img
-              src={`${webcam.url}${webcam.url.includes('?') ? '&' : '?'}t=${refreshKey}`}
+              src={imgSrc}
+              referrerPolicy="no-referrer"
               alt={webcam.name}
               className="w-full h-auto max-h-[85vh] object-contain"
             />

@@ -121,6 +121,7 @@ export function MapSidebar({ expanded, onToggleExpand, onSelectStation }: MapSid
 
     // Standalone webcam markers
     standaloneWebcams.forEach((cam) => {
+      if (cam.lat == null || cam.lng == null) return;
       const icon = L.divIcon({
         className: 'custom-marker',
         html: `<div class="webcam-pin"><span class="text-sm">📷</span></div>`,

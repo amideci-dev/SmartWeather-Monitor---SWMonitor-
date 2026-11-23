@@ -3,7 +3,7 @@
  * - Pagine (navigazione): rete prima, con fallback all'ultima copia dell'app se offline.
  * - File statici dello stesso dominio (/assets, icone): cache dopo il primo uso.
  */
-const VERSION = "swm-v1";
+const VERSION = "swm-v2";
 const SHELL = ["/", "/manifest.webmanifest", "/favicon.svg", "/logo-mark.svg", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -48,6 +48,20 @@ self.addEventListener("fetch", (event) => {
         }
         return res;
       });
+    }),
+  );
+});
+
+// Un tocco sulla notifica riporta in primo piano l'app (o la apre).
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || "/";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if ("focus" in client) return client.focus();
+      }
+      return self.clients.openWindow(target);
     }),
   );
 });

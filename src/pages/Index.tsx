@@ -1,5 +1,5 @@
 import { InstallButton } from '@/components/dashboard/InstallButton';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Radio, Waves, Mountain, LayoutGrid, Snowflake, Camera, RefreshCw, X, Activity, CloudSun } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -29,9 +29,11 @@ import { WebcamCard } from '@/components/dashboard/WebcamCard';
 import { mockAlert } from '@/data/mockAlert';
 import { stationWebcams } from '@/data/mockWebcams';
 import { generateWindAlerts, generateHydroAlerts, StationAlert } from '@/lib/windAlerts';
+import { notifyNewAlerts } from '@/lib/notifications';
 import { useLiveWeatherData } from '@/hooks/useLiveWeatherData';
 import { mergeStationsWithLiveData, mergeHydrometersWithLiveData, mergeSnowWithLiveData } from '@/lib/mergeData';
 import { ForecastDashboard } from '@/components/forecast/ForecastDashboard';
+import { SiteFooter } from '@/components/layout/SiteFooter';
 
 type DashboardView = 'situazione' | 'previsioni';
 
@@ -75,9 +77,26 @@ const Index = () => {
     [liveData]
   );
 
-  const windAlerts = useMemo(() => generateWindAlerts(stations), [stations]);
-  const hydroAlerts = useMemo(() => generateHydroAlerts(hydrometers), [hydrometers]);
+  // Gli avvisi nascono solo da misure reali: le stazioni senza dati o non raggiungibili mostrano valori
+  // segnaposto e non devono generare avvisi (né notifiche).
+  const windAlerts = useMemo(
+    () => generateWindAlerts(stations.filter((s) => !s.unreachable && !s.noData)),
+    [stations],
+  );
+  const hydroAlerts = useMemo(() => {
+    const liveIds = new Set(
+      (liveData?.hydrometers ?? [])
+        .filter((h) => !h.unreachable && ((h as { history?: unknown[] }).history?.length ?? 0) > 0)
+        .map((h) => h.id),
+    );
+    return generateHydroAlerts(hydrometers.filter((h) => liveIds.has(h.id)));
+  }, [hydrometers, liveData]);
   const allAlerts: StationAlert[] = useMemo(() => [...windAlerts, ...hydroAlerts], [windAlerts, hydroAlerts]);
+
+  // Notifica del browser per gli avvisi nuovi, a ogni aggiornamento dei dati reali
+  useEffect(() => {
+    if (liveData) void notifyNewAlerts(allAlerts);
+  }, [allAlerts, liveData]);
 
   const station = activeStation
     ? stations.find((s) => s.id === activeStation) ?? null
@@ -389,6 +408,8 @@ const Index = () => {
           <ForecastDashboard snowStations={snowStations} />
         </main>
       )}
+
+      <SiteFooter />
     </div>
   );
 };

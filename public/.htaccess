@@ -1,0 +1,8 @@
+# Hosting Apache (es. InfinityFree): le pagine interne dell'app (/info, /about) tornano a index.html.
+# I file veri (assets, weather.php, immagini...) vengono serviti normalmente.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ /index.html [L]
+</IfModule>

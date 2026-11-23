@@ -1,8 +1,17 @@
 import { useState, useMemo } from 'react';
-import { Bell, Wind, Droplets, AlertTriangle } from 'lucide-react';
+import { Bell, BellRing, Wind, Droplets, AlertTriangle } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { StationAlert } from '@/lib/windAlerts';
+import {
+  disableNotifications,
+  enableNotifications,
+  markAlertsAsSeen,
+  notificationPermission,
+  notificationsEnabled,
+  sendTestNotification,
+} from '@/lib/notifications';
 
 const severityStyles = {
   warning: {
@@ -60,6 +69,52 @@ function formatAlertDate(timeStr: string): string {
   const fullMatch = timeStr.match(/(\d{2})\/(\d{2})\/(\d{4})\s+ore\s+(\d{1,2}):(\d{2})/);
   if (fullMatch) return `${fullMatch[1]}/${fullMatch[2]} ore ${fullMatch[4]}:${fullMatch[5]}`;
   return timeStr;
+}
+
+function NotificationToggle({ alerts }: { alerts: StationAlert[] }) {
+  const [enabled, setEnabled] = useState(() => notificationsEnabled());
+  const [note, setNote] = useState('');
+
+  if (notificationPermission() === 'unsupported') {
+    return (
+      <p className="text-[11px] text-muted-foreground">
+        Questo browser non supporta le notifiche. Su iPhone aggiungi il sito alla schermata Home e aprilo da lì.
+      </p>
+    );
+  }
+
+  const toggle = async (on: boolean) => {
+    setNote('');
+    if (!on) {
+      disableNotifications();
+      setEnabled(false);
+      return;
+    }
+    const result = await enableNotifications();
+    if (result === 'granted') {
+      markAlertsAsSeen(alerts); // gli avvisi già in corso non vengono notificati di nuovo
+      setEnabled(true);
+      await sendTestNotification();
+    } else if (result === 'denied') {
+      setNote('Le notifiche sono bloccate per questo sito: abilitale dalle impostazioni del browser.');
+    } else {
+      setNote('Permesso non concesso.');
+    }
+  };
+
+  return (
+    <div>
+      <label className="flex cursor-pointer items-center gap-2">
+        <BellRing className="h-4 w-4 text-primary" />
+        <span className="flex-1 text-xs font-medium">Notifiche per i nuovi avvisi</span>
+        <Switch checked={enabled} onCheckedChange={toggle} />
+      </label>
+      <p className="mt-1 text-[10px] leading-snug text-muted-foreground">
+        Arrivano quando l'app è aperta o in secondo piano, non a app chiusa.
+      </p>
+      {note && <p className="mt-1 text-[10px] text-destructive">{note}</p>}
+    </div>
+  );
 }
 
 export function AlertsBell({ alerts, onSelectStation }: AlertsBellProps) {
@@ -210,6 +265,9 @@ export function AlertsBell({ alerts, onSelectStation }: AlertsBellProps) {
             </div>
           </ScrollArea>
         )}
+        <div className="border-t px-4 py-3">
+          <NotificationToggle alerts={alerts} />
+        </div>
       </PopoverContent>
     </Popover>
   );
