@@ -753,3 +753,40 @@ Deno.serve({ port: Number(Deno.env.get('PORT') ?? '8000') }, async (req) => {
     });
   }
 });
+
+// ─── Invio periodico del JSON su un hosting via FTP (opzionale) ───
+// Variabili: FTP_URL (es. ftp://ftpupload.net/htdocs/weather.json), FTP_USER, FTP_PASS, UPLOAD_SECONDS
+const FTP_URL = Deno.env.get('FTP_URL');
+const FTP_USER = Deno.env.get('FTP_USER') ?? '';
+const FTP_PASS = Deno.env.get('FTP_PASS') ?? '';
+const UPLOAD_SECONDS = Number(Deno.env.get('UPLOAD_SECONDS') ?? '300');
+
+async function uploadToFtp() {
+  const body = await getBody();
+  const tmp = '/tmp/weather.json';
+  await Deno.writeTextFile(tmp, body);
+  // Le credenziali passano da stdin (-K -), così non compaiono nell'elenco dei processi
+  const cfg = `user = "${`${FTP_USER}:${FTP_PASS}`.replace(/(["\\])/g, '\\$1')}"\n`;
+  const proc = new Deno.Command('curl', {
+    args: ['-sS', '--ftp-create-dirs', '--max-time', '60', '-K', '-', '-T', tmp, FTP_URL!],
+    stdin: 'piped', stdout: 'piped', stderr: 'piped',
+  }).spawn();
+  const w = proc.stdin.getWriter();
+  await w.write(new TextEncoder().encode(cfg));
+  await w.close();
+  const out = await proc.output();
+  if (!out.success) throw new Error(new TextDecoder().decode(out.stderr).trim() || `curl exit ${out.code}`);
+}
+
+if (FTP_URL) {
+  const run = async () => {
+    try {
+      await uploadToFtp();
+      console.log(`FTP upload ok ${new Date().toISOString()}`);
+    } catch (e) {
+      console.error('FTP upload failed:', String(e).replace(FTP_PASS || '\u0000', '***'));
+    }
+  };
+  run();
+  setInterval(run, UPLOAD_SECONDS * 1000);
+}

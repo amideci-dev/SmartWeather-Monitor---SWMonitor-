@@ -24,7 +24,8 @@ async function fetchLiveData(): Promise<LiveWeatherResponse> {
 
   // Produzione (Cloudflare Pages): collector sul NAS
   if (url) {
-    const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
+    const sep = url.includes('?') ? '&' : '?';
+    const res = await fetch(`${url}${sep}t=${Date.now()}`, { signal: AbortSignal.timeout(30000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (!data?.success) throw new Error(data?.error || 'Unknown error');
