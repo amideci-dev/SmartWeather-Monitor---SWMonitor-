@@ -40,9 +40,13 @@ export function SnowCard({ data }: SnowCardProps) {
         </CardHeader>
         <CardContent className="space-y-2">
           <div className="rounded-xl bg-muted/40 p-6 text-center">
-            <p className="text-lg font-semibold">Nessun Rilievo Disponibile</p>
+            <p className="text-lg font-semibold">
+              {data.unavailable ? 'Dato non disponibile' : 'Nessun Rilievo Disponibile'}
+            </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Nessuna misurazione registrata nella stagione in corso.
+              {data.unavailable
+                ? 'Non riesco a leggere il campo neve di MeteoTrentino in questo momento.'
+                : 'Nessuna misurazione registrata nella stagione in corso.'}
             </p>
           </div>
           <p className="text-[10px] text-muted-foreground text-right">{data.location}</p>

@@ -115,31 +115,26 @@ interface LiveSnowData {
   error?: string;
 }
 
+/** Scheda neve senza dati: mai mostrare i rilievi di esempio (marzo) come se fossero attuali. */
+function emptySnow(mock: SnowStation, unavailable: boolean): SnowStation {
+  return { ...mock, noData: true, unavailable, lastUpdate: '', currentDepth: null, history: [] };
+}
+
 export function mergeSnowWithLiveData(
   liveSnow: LiveSnowData[] | undefined
 ): SnowStation[] {
-  if (!liveSnow || liveSnow.length === 0) return mockSnowStations;
-
   return mockSnowStations.map((mock) => {
-    const live = liveSnow.find((l) => l.id === mock.id);
-    if (!live || live.unreachable) return mock;
+    const live = liveSnow?.find((l) => l.id === mock.id);
+    // Fonte non raggiunta o dati non ancora caricati
+    if (!live || live.unreachable) return emptySnow(mock, true);
 
-    // Fonte raggiunta ma nessun rilievo nella stagione in corso (es. inizio inverno):
-    // non mostrare i dati di esempio come se fossero attuali.
-    if (!live.history?.length) {
-      return {
-        ...mock,
-        noData: true,
-        lastUpdate: '',
-        currentDepth: null,
-        history: [],
-      };
-    }
+    // Fonte raggiunta ma nessun rilievo nella stagione in corso (es. inizio inverno)
+    if (!live.history?.length) return emptySnow(mock, false);
 
     return {
       ...mock,
-      lastUpdate: live.lastUpdate || mock.lastUpdate,
-      currentDepth: live.currentDepth ?? mock.currentDepth,
+      lastUpdate: live.lastUpdate || '',
+      currentDepth: live.currentDepth ?? null,
       history: live.history,
     };
   });
