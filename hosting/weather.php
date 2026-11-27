@@ -440,20 +440,28 @@ function parse_snow(string $json, array $c): array {
   $j = json_decode($json, true);
   if (!is_array($j)) throw new RuntimeException('JSON non valido');
   $obs = $j['osservazioni'] ?? null;
-  if (!is_array($obs) || !$obs) return ['id' => $c['id'], 'unreachable' => false, 'history' => [], 'currentDepth' => 0, 'lastUpdate' => ''];
-  $hist = [];
-  foreach (array_slice($obs, -30) as $o) {
-    $date = (new DateTime($o['DataRilievo']))->format('Y-m-d');
-    $hs = (float)trim((string)($o['HSnum'] ?? $o['HS'] ?? ''));
+  $empty = ['id' => $c['id'], 'unreachable' => false, 'history' => [], 'currentDepth' => 0, 'lastUpdate' => ''];
+  if (!is_array($obs) || !$obs) return $empty;
+
+  // Un rilievo malformato non deve far cadere l'intera scheda: lo salto e ordino per data.
+  $rows = [];
+  foreach ($obs as $o) {
+    if (!is_array($o)) continue;
+    try { $d = new DateTime((string)($o['DataRilievo'] ?? '')); } catch (Throwable $e) { continue; }
+    $hsRaw = trim((string)($o['HSnum'] ?? $o['HS'] ?? ''));
+    if ($hsRaw === '' || $hsRaw === '//' || !is_numeric(str_replace(',', '.', $hsRaw))) continue;
     $hnRaw = trim((string)($o['HNnum'] ?? $o['HN'] ?? ''));
-    $hist[] = ['date' => $date, 'hs' => $hs, 'hn' => ($hnRaw === '' || $hnRaw === '//') ? null : (float)$hnRaw];
+    $hn = ($hnRaw === '' || $hnRaw === '//' || !is_numeric(str_replace(',', '.', $hnRaw))) ? null : (float)str_replace(',', '.', $hnRaw);
+    $rows[] = ['ts' => $d->getTimestamp(), 'date' => $d->format('Y-m-d'), 'dmy' => $d->format('d/m/Y'),
+               'hs' => (float)str_replace(',', '.', $hsRaw), 'hn' => $hn];
   }
-  $last = end($obs);
+  if (!$rows) return $empty;
+  usort($rows, fn($a, $b) => $a['ts'] <=> $b['ts']);
+  $last = end($rows);
   return [
     'id' => $c['id'], 'unreachable' => false,
-    'lastUpdate' => (new DateTime($last['DataRilievo']))->format('d/m/Y'),
-    'currentDepth' => (float)trim((string)($last['HSnum'] ?? $last['HS'] ?? '')),
-    'history' => $hist,
+    'lastUpdate' => $last['dmy'], 'currentDepth' => $last['hs'],
+    'history' => array_map(fn($r) => ['date' => $r['date'], 'hs' => $r['hs'], 'hn' => $r['hn']], array_slice($rows, -30)),
   ];
 }
 

@@ -655,21 +655,24 @@ async function fetchSnowStation(config: typeof SNOW_STATIONS[0]) {
       return { id: config.id, unreachable: false, history: [], currentDepth: 0, lastUpdate: '' };
     }
 
-    // Get last 30 entries
-    const recent = obs.slice(-30);
-    const history = recent.map((o: any) => {
-      const d = new Date(o.DataRilievo);
+    // Un rilievo malformato non deve far cadere l'intera scheda: lo salto e ordino per data.
+    const num = (v: unknown): number | null => {
+      const t = String(v ?? '').trim().replace(',', '.');
+      return t === '' || t === '//' || !Number.isFinite(Number(t)) ? null : Number(t);
+    };
+    const rows = obs.flatMap((o: any) => {
+      const d = new Date(o?.DataRilievo);
+      const hs = num(o?.HSnum ?? o?.HS);
+      if (Number.isNaN(d.getTime()) || hs === null) return [];
       const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      const hs = parseFloat(String(o.HSnum ?? o.HS ?? '').trim()) || 0;
-      const hnRaw = String(o.HNnum ?? o.HN ?? '').trim();
-      const hn = hnRaw === '' || hnRaw === '//' ? null : (parseFloat(hnRaw) || 0);
-      return { date, hs, hn };
-    });
+      return [{ ts: d.getTime(), d, date, hs, hn: num(o?.HNnum ?? o?.HN) }];
+    }).sort((a: any, b: any) => a.ts - b.ts);
+    if (!rows.length) return { id: config.id, unreachable: false, history: [], currentDepth: 0, lastUpdate: '' };
 
-    const last = obs[obs.length - 1];
-    const lastDate = new Date(last.DataRilievo);
-    const lastUpdate = `${lastDate.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
-    const currentDepth = parseFloat(String(last.HSnum ?? last.HS ?? '').trim()) || 0;
+    const history = rows.slice(-30).map(({ date, hs, hn }: any) => ({ date, hs, hn }));
+    const last = rows[rows.length - 1];
+    const lastUpdate = last.d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const currentDepth = last.hs;
 
     return {
       id: config.id,
